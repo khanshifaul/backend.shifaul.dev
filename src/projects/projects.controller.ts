@@ -1,0 +1,441 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { AccessTokenGuard } from '../common/guards/access-token.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { User } from '../common/decorators/user.decorator';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
+import { ProjectQueryDto } from './dto/project-query.dto';
+import { ProjectsService } from './projects.service';
+
+interface ApiResponse<T = any> {
+  success: boolean;
+  message: string;
+  data?: T;
+  pagination?: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+@ApiTags('Projects')
+@Controller('projects')
+@UseGuards(AccessTokenGuard)
+@ApiBearerAuth('access-token')
+export class ProjectsController {
+  constructor(private readonly projectsService: ProjectsService) {}
+
+  private createSuccessResponse<T>(message: string, data?: T): ApiResponse<T> {
+    return { success: true, message, data };
+  }
+
+  private createPaginatedResponse<T>(
+    message: string,
+    data: T,
+    pagination: any,
+  ): ApiResponse<T> {
+    return {
+      success: true,
+      message,
+      data,
+      pagination,
+    };
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create a new project' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['slug', 'title', 'services', 'technologies', 'website', 'thumbnail', 'about', 'goal', 'execution', 'results'],
+      properties: {
+        slug: {
+          type: 'string',
+          example: 'ecommerce-platform-solution',
+        },
+        title: {
+          type: 'string',
+          example: 'E-commerce Platform Solution',
+        },
+        subtitle: {
+          type: 'string',
+          example: 'Modern e-commerce solution with React and Node.js',
+        },
+        client: {
+          type: 'string',
+          example: 'TechStart Inc.',
+        },
+        logo: {
+          type: 'string',
+          example: 'https://example.com/logos/techstart-logo.png',
+        },
+        services: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['Web Development', 'UI/UX Design', 'Database Design'],
+        },
+        technologies: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+        },
+        website: {
+          type: 'string',
+          example: 'https://techstart-ecommerce.com',
+        },
+        thumbnail: {
+          type: 'string',
+          example: 'https://example.com/projects/ecommerce-platform-thumb.jpg',
+        },
+        about: {
+          type: 'string',
+          example: 'A comprehensive e-commerce platform built with modern technologies...',
+        },
+        goal: {
+          type: 'string',
+          example: 'To create a scalable e-commerce solution that can handle high traffic...',
+        },
+        execution: {
+          type: 'string',
+          example: 'We followed an agile development process with bi-weekly sprints...',
+        },
+        results: {
+          type: 'string',
+          example: 'The platform successfully increased client sales by 150% and reduced page load time by 60%',
+        },
+        goalImages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['https://example.com/projects/ecommerce/wireframe-1.jpg'],
+        },
+        resultImages: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['https://example.com/projects/ecommerce/dashboard-screenshot.jpg'],
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['ecommerce', 'react', 'nodejs', 'aws'],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Project created successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Project created successfully',
+        data: {
+          id: 'project-id',
+          slug: 'ecommerce-platform-solution',
+          title: 'E-commerce Platform Solution',
+          subtitle: 'Modern e-commerce solution with React and Node.js',
+          client: 'TechStart Inc.',
+          logo: 'https://example.com/logos/techstart-logo.png',
+          services: ['Web Development', 'UI/UX Design', 'Database Design'],
+          technologies: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+          website: 'https://techstart-ecommerce.com',
+          thumbnail: 'https://example.com/projects/ecommerce-platform-thumb.jpg',
+          about: 'A comprehensive e-commerce platform...',
+          goal: 'To create a scalable e-commerce solution...',
+          execution: 'We followed an agile development process...',
+          results: 'The platform successfully increased client sales...',
+          goalImages: [],
+          resultImages: [],
+          tags: [
+            {
+              id: 'tag-id',
+              name: 'ecommerce',
+            },
+          ],
+          createdAt: '2023-01-01T00:00:00.000Z',
+          updatedAt: '2023-01-01T00:00:00.000Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request',
+  })
+  async createProject(@Body() dto: CreateProjectDto): Promise<ApiResponse> {
+    const project = await this.projectsService.createProject(dto);
+    return this.createSuccessResponse('Project created successfully', project);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get projects with pagination and filters' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'client', required: false, type: String })
+  @ApiQuery({ name: 'services', required: false, type: [String] })
+  @ApiQuery({ name: 'technologies', required: false, type: [String] })
+  @ApiQuery({ name: 'tags', required: false, type: [String] })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Projects retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Projects retrieved successfully',
+        data: [
+          {
+            id: 'project-id',
+            slug: 'ecommerce-platform-solution',
+            title: 'E-commerce Platform Solution',
+            subtitle: 'Modern e-commerce solution with React and Node.js',
+            client: 'TechStart Inc.',
+            logo: 'https://example.com/logos/techstart-logo.png',
+            services: ['Web Development', 'UI/UX Design'],
+            technologies: ['React', 'Node.js'],
+            website: 'https://techstart-ecommerce.com',
+            thumbnail: 'https://example.com/projects/ecommerce-platform-thumb.jpg',
+            tags: [
+              {
+                id: 'tag-id',
+                name: 'ecommerce',
+              },
+            ],
+            createdAt: '2023-01-01T00:00:00.000Z',
+            updatedAt: '2023-01-01T00:00:00.000Z',
+            _count: {
+              tags: 1,
+            },
+          },
+        ],
+        pagination: {
+          page: 1,
+          limit: 10,
+          total: 25,
+          totalPages: 3,
+        },
+      },
+    },
+  })
+  async getProjects(@Query() query: ProjectQueryDto): Promise<ApiResponse> {
+    const result = await this.projectsService.getProjects(query);
+    return this.createPaginatedResponse(
+      'Projects retrieved successfully',
+      result.projects,
+      result.pagination,
+    );
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get project statistics' })
+  @ApiResponse({
+    status: 200,
+    description: 'Statistics retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Project statistics retrieved successfully',
+        data: {
+          total: 25,
+          clients: 15,
+          totalServices: 8,
+          totalTechnologies: 12,
+          services: ['Web Development', 'UI/UX Design', 'Mobile Development'],
+          technologies: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+        },
+      },
+    },
+  })
+  async getProjectStats(): Promise<ApiResponse> {
+    const stats = await this.projectsService.getProjectStats();
+    return this.createSuccessResponse('Project statistics retrieved successfully', stats);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a specific project by ID' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Project retrieved successfully',
+    schema: {
+      example: {
+        success: true,
+        message: 'Project retrieved successfully',
+        data: {
+          id: 'project-id',
+          slug: 'ecommerce-platform-solution',
+          title: 'E-commerce Platform Solution',
+          subtitle: 'Modern e-commerce solution with React and Node.js',
+          client: 'TechStart Inc.',
+          logo: 'https://example.com/logos/techstart-logo.png',
+          services: ['Web Development', 'UI/UX Design', 'Database Design'],
+          technologies: ['React', 'Node.js', 'PostgreSQL', 'AWS'],
+          website: 'https://techstart-ecommerce.com',
+          thumbnail: 'https://example.com/projects/ecommerce-platform-thumb.jpg',
+          about: 'A comprehensive e-commerce platform...',
+          goal: 'To create a scalable e-commerce solution...',
+          execution: 'We followed an agile development process...',
+          results: 'The platform successfully increased client sales...',
+          goalImages: [],
+          resultImages: [],
+          tags: [
+            {
+              id: 'tag-id',
+              name: 'ecommerce',
+            },
+          ],
+          createdAt: '2023-01-01T00:00:00.000Z',
+          updatedAt: '2023-01-01T00:00:00.000Z',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async getProjectById(@Param('id') projectId: string): Promise<ApiResponse> {
+    const project = await this.projectsService.getProjectById(projectId);
+    return this.createSuccessResponse('Project retrieved successfully', project);
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get a specific project by slug' })
+  @ApiParam({ name: 'slug', description: 'Project Slug' })
+  @ApiResponse({
+    status: 200,
+    description: 'Project retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async getProjectBySlug(@Param('slug') slug: string): Promise<ApiResponse> {
+    const project = await this.projectsService.getProjectBySlug(slug);
+    return this.createSuccessResponse('Project retrieved successfully', project);
+  }
+
+  @Get(':id/related')
+  @ApiOperation({ summary: 'Get related projects' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of related projects to return' })
+  @ApiResponse({
+    status: 200,
+    description: 'Related projects retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async getRelatedProjects(
+    @Param('id') projectId: string,
+    @Query('limit') limit?: number,
+  ): Promise<ApiResponse> {
+    const relatedProjects = await this.projectsService.getRelatedProjects(projectId, limit || 5);
+    return this.createSuccessResponse('Related projects retrieved successfully', relatedProjects);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a project' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        title: {
+          type: 'string',
+          example: 'Updated E-commerce Platform Solution',
+        },
+        subtitle: {
+          type: 'string',
+          example: 'Updated modern e-commerce solution with React and Node.js',
+        },
+        services: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['Web Development', 'UI/UX Design', 'Database Design', 'DevOps'],
+        },
+        technologies: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['React', 'Node.js', 'PostgreSQL', 'AWS', 'Docker'],
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['ecommerce', 'react', 'nodejs', 'aws', 'mobile'],
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Project updated successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async updateProject(
+    @Param('id') projectId: string,
+    @Body() dto: UpdateProjectDto,
+    @User() user: any,
+  ): Promise<ApiResponse> {
+    const project = await this.projectsService.updateProject(
+      projectId,
+      dto,
+      user?.id,
+      user?.roles,
+    );
+    return this.createSuccessResponse('Project updated successfully', project);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a project' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Project deleted successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - insufficient permissions',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async deleteProject(
+    @Param('id') projectId: string,
+    @User() user: any,
+  ): Promise<ApiResponse> {
+    const result = await this.projectsService.deleteProject(
+      projectId,
+      user?.id,
+      user?.roles,
+    );
+    return this.createSuccessResponse(result.message);
+  }
+}
