@@ -280,7 +280,7 @@ model BlogPost {
   views      Int      @default(0)
   authorId   String
   authorName String
-  published  Boolean
+  published  Boolean @default(false) @db.Boolean
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -319,9 +319,11 @@ model Project {
   goalImages   String[]
   resultImages String[]
   tags         Tag[]    @relation("ProjectTags")
+  published    Boolean  @default(false) @db.Boolean
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   @@index([slug])
+  @@index([published])
   @@map("projects")
 }

@@ -22,10 +22,13 @@ import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { User } from '../common/decorators/user.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { Public } from '../common/decorators/public.decorator';
 import { CreateBlogPostDto } from './dto/create-blog-post.dto';
 import { UpdateBlogPostDto } from './dto/update-blog-post.dto';
 import { BlogPostQueryDto } from './dto/blog-post-query.dto';
 import { BlogPostsService } from './blog-posts.service';
+import { PermissionUtils } from '../common/utils/permission.util';
+import { ForbiddenException } from '@nestjs/common';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -42,7 +45,7 @@ interface ApiResponse<T = any> {
 @ApiTags('Blog Posts')
 @Controller('blog-posts')
 @UseGuards(AccessTokenGuard)
-@ApiBearerAuth('access-token')
+
 export class BlogPostsController {
   constructor(private readonly blogPostsService: BlogPostsService) {}
 
@@ -63,7 +66,30 @@ export class BlogPostsController {
     };
   }
 
+  /**
+   * Check if user has permission to access blog posts
+   * Users can access if they are:
+   * 1. The creator of the content
+   * 2. Have admin/staff/developer/support agent roles
+   */
+  private checkBlogPostAccess(user: any): void {
+    if (!user) {
+      throw new ForbiddenException('User authentication required');
+    }
+
+    // Check if user has admin, staff, developer, or support agent role
+    if (PermissionUtils.isStaff(user.roles)) {
+      return; // User has staff privileges
+    }
+
+    // If not staff, user must be authenticated (creator-based access is handled in service layer)
+    if (!user.id || !user.roles) {
+      throw new ForbiddenException('Access denied. Insufficient permissions.');
+    }
+  }
+
   @Post()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new blog post' })
   @ApiBody({
     schema: {
@@ -145,6 +171,7 @@ export class BlogPostsController {
   }
 
   @Get()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get blog posts with pagination and filters' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -195,7 +222,8 @@ export class BlogPostsController {
       },
     },
   })
-  async getBlogPosts(@Query() query: BlogPostQueryDto): Promise<ApiResponse> {
+  async getBlogPosts(@Query() query: BlogPostQueryDto, @User() user: any): Promise<ApiResponse> {
+    this.checkBlogPostAccess(user);
     const result = await this.blogPostsService.getBlogPosts(query);
     return this.createPaginatedResponse(
       'Blog posts retrieved successfully',
@@ -205,6 +233,7 @@ export class BlogPostsController {
   }
 
   @Get('published')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get published blog posts only' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -229,6 +258,7 @@ export class BlogPostsController {
   }
 
   @Get('user/:userId')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get blog posts by a specific user' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiQuery({ name: 'page', required: false, type: Number })
@@ -243,7 +273,9 @@ export class BlogPostsController {
   async getUserBlogPosts(
     @Param('userId') userId: string,
     @Query() query: BlogPostQueryDto,
+    @User() user: any,
   ): Promise<ApiResponse> {
+    this.checkBlogPostAccess(user);
     const result = await this.blogPostsService.getUserBlogPosts(userId, query);
     return this.createPaginatedResponse(
       'User blog posts retrieved successfully',
@@ -253,6 +285,9 @@ export class BlogPostsController {
   }
 
   @Get('stats')
+  @ApiBearerAuth('access-token')
+  @UseGuards(RolesGuard)
+  @Roles('admin', 'staff', 'developer', 'support_agent')
   @ApiOperation({ summary: 'Get blog post statistics' })
   @ApiResponse({
     status: 200,
@@ -277,6 +312,7 @@ export class BlogPostsController {
   }
 
   @Get(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get a specific blog post by ID' })
   @ApiParam({ name: 'id', description: 'Blog Post ID' })
   @ApiQuery({ name: 'incrementViews', required: false, type: Boolean, description: 'Whether to increment view count' })
@@ -317,7 +353,9 @@ export class BlogPostsController {
   async getBlogPostById(
     @Param('id') blogPostId: string,
     @Query('incrementViews') incrementViews?: boolean,
+    @User() user?: any,
   ): Promise<ApiResponse> {
+    this.checkBlogPostAccess(user);
     const blogPost = await this.blogPostsService.getBlogPostById(
       blogPostId,
       incrementViews || false,
@@ -326,6 +364,7 @@ export class BlogPostsController {
   }
 
   @Get('slug/:slug')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get a specific blog post by slug' })
   @ApiParam({ name: 'slug', description: 'Blog Post Slug' })
   @ApiQuery({ name: 'incrementViews', required: false, type: Boolean, description: 'Whether to increment view count' })
@@ -340,7 +379,9 @@ export class BlogPostsController {
   async getBlogPostBySlug(
     @Param('slug') slug: string,
     @Query('incrementViews') incrementViews?: boolean,
+    @User() user?: any,
   ): Promise<ApiResponse> {
+    this.checkBlogPostAccess(user);
     const blogPost = await this.blogPostsService.getBlogPostBySlug(
       slug,
       incrementViews || false,
@@ -349,6 +390,7 @@ export class BlogPostsController {
   }
 
   @Put(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update a blog post' })
   @ApiParam({ name: 'id', description: 'Blog Post ID' })
   @ApiBody({
@@ -410,6 +452,7 @@ export class BlogPostsController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete a blog post' })
   @ApiParam({ name: 'id', description: 'Blog Post ID' })
   @ApiResponse({
@@ -437,6 +480,7 @@ export class BlogPostsController {
   }
 
   @Post(':id/reactions')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Add a reaction to a blog post' })
   @ApiParam({ name: 'id', description: 'Blog Post ID' })
   @ApiResponse({
@@ -469,6 +513,7 @@ export class BlogPostsController {
   }
 
   @Delete(':id/reactions')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Remove a reaction from a blog post' })
   @ApiParam({ name: 'id', description: 'Blog Post ID' })
   @ApiResponse({
@@ -498,5 +543,80 @@ export class BlogPostsController {
   ): Promise<ApiResponse> {
     const result = await this.blogPostsService.removeReaction(blogPostId, user.id);
     return this.createSuccessResponse('Reaction removed successfully', result);
+  }
+
+  // PUBLIC ENDPOINTS - No authentication required
+
+  @Get('/public/blog-posts')
+  @Public()
+  @ApiOperation({ summary: 'Get published blog posts with pagination and filters (Public)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'author', required: false, type: String })
+  @ApiQuery({ name: 'tags', required: false, type: [String] })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String })
+  @ApiQuery({ name: 'minViews', required: false, type: Number })
+  @ApiQuery({ name: 'minReactions', required: false, type: Number })
+  @ApiResponse({
+    status: 200,
+    description: 'Published blog posts retrieved successfully',
+  })
+  async getPublicBlogPosts(@Query() query: BlogPostQueryDto): Promise<ApiResponse> {
+    const result = await this.blogPostsService.getPublishedBlogPosts(query);
+    return this.createPaginatedResponse(
+      'Published blog posts retrieved successfully',
+      result.blogPosts,
+      result.pagination,
+    );
+  }
+
+  @Get('/public/blog-posts/:id')
+  @Public()
+  @ApiOperation({ summary: 'Get a specific published blog post by ID (Public)' })
+  @ApiParam({ name: 'id', description: 'Blog Post ID' })
+  @ApiQuery({ name: 'incrementViews', required: false, type: Boolean, description: 'Whether to increment view count' })
+  @ApiResponse({
+    status: 200,
+    description: 'Published blog post retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Published blog post not found',
+  })
+  async getPublicBlogPostById(
+    @Param('id') blogPostId: string,
+    @Query('incrementViews') incrementViews?: boolean,
+  ): Promise<ApiResponse> {
+    const blogPost = await this.blogPostsService.getBlogPostById(
+      blogPostId,
+      incrementViews || false,
+    );
+    return this.createSuccessResponse('Published blog post retrieved successfully', blogPost);
+  }
+
+  @Get('/public/blog-posts/slug/:slug')
+  @Public()
+  @ApiOperation({ summary: 'Get a specific published blog post by slug (Public)' })
+  @ApiParam({ name: 'slug', description: 'Blog Post Slug' })
+  @ApiQuery({ name: 'incrementViews', required: false, type: Boolean, description: 'Whether to increment view count' })
+  @ApiResponse({
+    status: 200,
+    description: 'Published blog post retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Published blog post not found',
+  })
+  async getPublicBlogPostBySlug(
+    @Param('slug') slug: string,
+    @Query('incrementViews') incrementViews?: boolean,
+  ): Promise<ApiResponse> {
+    const blogPost = await this.blogPostsService.getBlogPostBySlug(
+      slug,
+      incrementViews || false,
+    );
+    return this.createSuccessResponse('Published blog post retrieved successfully', blogPost);
   }
 }

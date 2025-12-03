@@ -22,10 +22,13 @@ import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { User } from '../common/decorators/user.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
+import { Public } from '../common/decorators/public.decorator';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectQueryDto } from './dto/project-query.dto';
 import { ProjectsService } from './projects.service';
+import { PermissionUtils } from '../common/utils/permission.util';
+import { ForbiddenException } from '@nestjs/common';
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -42,7 +45,6 @@ interface ApiResponse<T = any> {
 @ApiTags('Projects')
 @Controller('projects')
 @UseGuards(AccessTokenGuard)
-@ApiBearerAuth('access-token')
 export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
@@ -63,7 +65,30 @@ export class ProjectsController {
     };
   }
 
+  /**
+   * Check if user has permission to access projects
+   * Users can access if they are:
+   * 1. The creator of the content
+   * 2. Have admin/staff/developer/support agent roles
+   */
+  private checkProjectAccess(user: any): void {
+    if (!user) {
+      throw new ForbiddenException('User authentication required');
+    }
+
+    // Check if user has admin, staff, developer, or support agent role
+    if (PermissionUtils.isStaff(user.roles)) {
+      return; // User has staff privileges
+    }
+
+    // If not staff, user must be authenticated (creator-based access is handled in service layer)
+    if (!user.id || !user.roles) {
+      throw new ForbiddenException('Access denied. Insufficient permissions.');
+    }
+  }
+
   @Post()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Create a new project' })
   @ApiBody({
     schema: {
@@ -188,6 +213,7 @@ export class ProjectsController {
   }
 
   @Get()
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get projects with pagination and filters' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
@@ -239,7 +265,8 @@ export class ProjectsController {
       },
     },
   })
-  async getProjects(@Query() query: ProjectQueryDto): Promise<ApiResponse> {
+  async getProjects(@Query() query: ProjectQueryDto, @User() user: any): Promise<ApiResponse> {
+    this.checkProjectAccess(user);
     const result = await this.projectsService.getProjects(query);
     return this.createPaginatedResponse(
       'Projects retrieved successfully',
@@ -249,6 +276,7 @@ export class ProjectsController {
   }
 
   @Get('stats')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get project statistics' })
   @ApiResponse({
     status: 200,
@@ -274,6 +302,7 @@ export class ProjectsController {
   }
 
   @Get(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get a specific project by ID' })
   @ApiParam({ name: 'id', description: 'Project ID' })
   @ApiResponse({
@@ -316,12 +345,14 @@ export class ProjectsController {
     status: 404,
     description: 'Project not found',
   })
-  async getProjectById(@Param('id') projectId: string): Promise<ApiResponse> {
+  async getProjectById(@Param('id') projectId: string, @User() user: any): Promise<ApiResponse> {
+    this.checkProjectAccess(user);
     const project = await this.projectsService.getProjectById(projectId);
     return this.createSuccessResponse('Project retrieved successfully', project);
   }
 
   @Get('slug/:slug')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get a specific project by slug' })
   @ApiParam({ name: 'slug', description: 'Project Slug' })
   @ApiResponse({
@@ -332,12 +363,14 @@ export class ProjectsController {
     status: 404,
     description: 'Project not found',
   })
-  async getProjectBySlug(@Param('slug') slug: string): Promise<ApiResponse> {
+  async getProjectBySlug(@Param('slug') slug: string, @User() user: any): Promise<ApiResponse> {
+    this.checkProjectAccess(user);
     const project = await this.projectsService.getProjectBySlug(slug);
     return this.createSuccessResponse('Project retrieved successfully', project);
   }
 
   @Get(':id/related')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Get related projects' })
   @ApiParam({ name: 'id', description: 'Project ID' })
   @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of related projects to return' })
@@ -352,12 +385,15 @@ export class ProjectsController {
   async getRelatedProjects(
     @Param('id') projectId: string,
     @Query('limit') limit?: number,
+    @User() user?: any,
   ): Promise<ApiResponse> {
+    this.checkProjectAccess(user);
     const relatedProjects = await this.projectsService.getRelatedProjects(projectId, limit || 5);
     return this.createSuccessResponse('Related projects retrieved successfully', relatedProjects);
   }
 
   @Put(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Update a project' })
   @ApiParam({ name: 'id', description: 'Project ID' })
   @ApiBody({
@@ -413,6 +449,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Delete a project' })
   @ApiParam({ name: 'id', description: 'Project ID' })
   @ApiResponse({
@@ -437,5 +474,87 @@ export class ProjectsController {
       user?.roles,
     );
     return this.createSuccessResponse(result.message);
+  }
+
+  // PUBLIC ENDPOINTS - No authentication required
+
+  @Get('/public/projects')
+  @Public()
+  @ApiOperation({ summary: 'Get published projects with pagination and filters (Public)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'client', required: false, type: String })
+  @ApiQuery({ name: 'services', required: false, type: [String] })
+  @ApiQuery({ name: 'technologies', required: false, type: [String] })
+  @ApiQuery({ name: 'tags', required: false, type: [String] })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String })
+  @ApiResponse({
+    status: 200,
+    description: 'Published projects retrieved successfully',
+  })
+  async getPublicProjects(@Query() query: ProjectQueryDto): Promise<ApiResponse> {
+    const result = await this.projectsService.getPublishedProjects(query);
+    return this.createPaginatedResponse(
+      'Published projects retrieved successfully',
+      result.projects,
+      result.pagination,
+    );
+  }
+
+  @Get('/public/projects/:id')
+  @Public()
+  @ApiOperation({ summary: 'Get a specific published project by ID (Public)' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Published project retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Published project not found',
+  })
+  async getPublicProjectById(@Param('id') projectId: string): Promise<ApiResponse> {
+    const project = await this.projectsService.getPublicProjectById(projectId);
+    return this.createSuccessResponse('Published project retrieved successfully', project);
+  }
+
+  @Get('/public/projects/slug/:slug')
+  @Public()
+  @ApiOperation({ summary: 'Get a specific published project by slug (Public)' })
+  @ApiParam({ name: 'slug', description: 'Project Slug' })
+  @ApiResponse({
+    status: 200,
+    description: 'Published project retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Published project not found',
+  })
+  async getPublicProjectBySlug(@Param('slug') slug: string): Promise<ApiResponse> {
+    const project = await this.projectsService.getPublicProjectBySlug(slug);
+    return this.createSuccessResponse('Published project retrieved successfully', project);
+  }
+
+  @Get('/public/projects/:id/related')
+  @Public()
+  @ApiOperation({ summary: 'Get related published projects (Public)' })
+  @ApiParam({ name: 'id', description: 'Project ID' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Number of related projects to return' })
+  @ApiResponse({
+    status: 200,
+    description: 'Related published projects retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Project not found',
+  })
+  async getPublicRelatedProjects(
+    @Param('id') projectId: string,
+    @Query('limit') limit?: number,
+  ): Promise<ApiResponse> {
+    const relatedProjects = await this.projectsService.getPublicRelatedProjects(projectId, limit || 5);
+    return this.createSuccessResponse('Related published projects retrieved successfully', relatedProjects);
   }
 }

@@ -362,7 +362,7 @@ export type BlogPostCreateInput = {
   views?: number
   authorId: string
   authorName: string
-  published: boolean
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tags?: Prisma.TagCreateNestedManyWithoutBlogPostsInput
@@ -378,7 +378,7 @@ export type BlogPostUncheckedCreateInput = {
   views?: number
   authorId: string
   authorName: string
-  published: boolean
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutBlogPostsInput
@@ -426,7 +426,7 @@ export type BlogPostCreateManyInput = {
   views?: number
   authorId: string
   authorName: string
-  published: boolean
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -574,7 +574,7 @@ export type BlogPostCreateWithoutTagsInput = {
   views?: number
   authorId: string
   authorName: string
-  published: boolean
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -589,7 +589,7 @@ export type BlogPostUncheckedCreateWithoutTagsInput = {
   views?: number
   authorId: string
   authorName: string
-  published: boolean
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }

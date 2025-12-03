@@ -37,6 +37,7 @@ export type ProjectMinAggregateOutputType = {
   goal: string | null
   execution: string | null
   results: string | null
+  published: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -54,6 +55,7 @@ export type ProjectMaxAggregateOutputType = {
   goal: string | null
   execution: string | null
   results: string | null
+  published: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -75,6 +77,7 @@ export type ProjectCountAggregateOutputType = {
   results: number
   goalImages: number
   resultImages: number
+  published: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -94,6 +97,7 @@ export type ProjectMinAggregateInputType = {
   goal?: true
   execution?: true
   results?: true
+  published?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -111,6 +115,7 @@ export type ProjectMaxAggregateInputType = {
   goal?: true
   execution?: true
   results?: true
+  published?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -132,6 +137,7 @@ export type ProjectCountAggregateInputType = {
   results?: true
   goalImages?: true
   resultImages?: true
+  published?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -226,6 +232,7 @@ export type ProjectGroupByOutputType = {
   results: string
   goalImages: string[]
   resultImages: string[]
+  published: boolean
   createdAt: Date
   updatedAt: Date
   _count: ProjectCountAggregateOutputType | null
@@ -268,6 +275,7 @@ export type ProjectWhereInput = {
   results?: Prisma.StringFilter<"Project"> | string
   goalImages?: Prisma.StringNullableListFilter<"Project">
   resultImages?: Prisma.StringNullableListFilter<"Project">
+  published?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   tags?: Prisma.TagListRelationFilter
@@ -290,6 +298,7 @@ export type ProjectOrderByWithRelationInput = {
   results?: Prisma.SortOrder
   goalImages?: Prisma.SortOrder
   resultImages?: Prisma.SortOrder
+  published?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   tags?: Prisma.TagOrderByRelationAggregateInput
@@ -315,6 +324,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   results?: Prisma.StringFilter<"Project"> | string
   goalImages?: Prisma.StringNullableListFilter<"Project">
   resultImages?: Prisma.StringNullableListFilter<"Project">
+  published?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   tags?: Prisma.TagListRelationFilter
@@ -337,6 +347,7 @@ export type ProjectOrderByWithAggregationInput = {
   results?: Prisma.SortOrder
   goalImages?: Prisma.SortOrder
   resultImages?: Prisma.SortOrder
+  published?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.ProjectCountOrderByAggregateInput
@@ -364,6 +375,7 @@ export type ProjectScalarWhereWithAggregatesInput = {
   results?: Prisma.StringWithAggregatesFilter<"Project"> | string
   goalImages?: Prisma.StringNullableListFilter<"Project">
   resultImages?: Prisma.StringNullableListFilter<"Project">
+  published?: Prisma.BoolWithAggregatesFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Project"> | Date | string
 }
@@ -385,6 +397,7 @@ export type ProjectCreateInput = {
   results: string
   goalImages?: Prisma.ProjectCreategoalImagesInput | string[]
   resultImages?: Prisma.ProjectCreateresultImagesInput | string[]
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tags?: Prisma.TagCreateNestedManyWithoutProjectsInput
@@ -407,6 +420,7 @@ export type ProjectUncheckedCreateInput = {
   results: string
   goalImages?: Prisma.ProjectCreategoalImagesInput | string[]
   resultImages?: Prisma.ProjectCreateresultImagesInput | string[]
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   tags?: Prisma.TagUncheckedCreateNestedManyWithoutProjectsInput
@@ -429,6 +443,7 @@ export type ProjectUpdateInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tags?: Prisma.TagUpdateManyWithoutProjectsNestedInput
@@ -451,6 +466,7 @@ export type ProjectUncheckedUpdateInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   tags?: Prisma.TagUncheckedUpdateManyWithoutProjectsNestedInput
@@ -473,6 +489,7 @@ export type ProjectCreateManyInput = {
   results: string
   goalImages?: Prisma.ProjectCreategoalImagesInput | string[]
   resultImages?: Prisma.ProjectCreateresultImagesInput | string[]
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -494,6 +511,7 @@ export type ProjectUpdateManyMutationInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -515,6 +533,7 @@ export type ProjectUncheckedUpdateManyInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -546,6 +565,7 @@ export type ProjectCountOrderByAggregateInput = {
   results?: Prisma.SortOrder
   goalImages?: Prisma.SortOrder
   resultImages?: Prisma.SortOrder
+  published?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -563,6 +583,7 @@ export type ProjectMaxOrderByAggregateInput = {
   goal?: Prisma.SortOrder
   execution?: Prisma.SortOrder
   results?: Prisma.SortOrder
+  published?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -580,6 +601,7 @@ export type ProjectMinOrderByAggregateInput = {
   goal?: Prisma.SortOrder
   execution?: Prisma.SortOrder
   results?: Prisma.SortOrder
+  published?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -675,6 +697,7 @@ export type ProjectCreateWithoutTagsInput = {
   results: string
   goalImages?: Prisma.ProjectCreategoalImagesInput | string[]
   resultImages?: Prisma.ProjectCreateresultImagesInput | string[]
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -696,6 +719,7 @@ export type ProjectUncheckedCreateWithoutTagsInput = {
   results: string
   goalImages?: Prisma.ProjectCreategoalImagesInput | string[]
   resultImages?: Prisma.ProjectCreateresultImagesInput | string[]
+  published?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -741,6 +765,7 @@ export type ProjectScalarWhereInput = {
   results?: Prisma.StringFilter<"Project"> | string
   goalImages?: Prisma.StringNullableListFilter<"Project">
   resultImages?: Prisma.StringNullableListFilter<"Project">
+  published?: Prisma.BoolFilter<"Project"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Project"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Project"> | Date | string
 }
@@ -762,6 +787,7 @@ export type ProjectUpdateWithoutTagsInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -783,6 +809,7 @@ export type ProjectUncheckedUpdateWithoutTagsInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -804,6 +831,7 @@ export type ProjectUncheckedUpdateManyWithoutTagsInput = {
   results?: Prisma.StringFieldUpdateOperationsInput | string
   goalImages?: Prisma.ProjectUpdategoalImagesInput | string[]
   resultImages?: Prisma.ProjectUpdateresultImagesInput | string[]
+  published?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -856,6 +884,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   results?: boolean
   goalImages?: boolean
   resultImages?: boolean
+  published?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   tags?: boolean | Prisma.Project$tagsArgs<ExtArgs>
@@ -879,6 +908,7 @@ export type ProjectSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   results?: boolean
   goalImages?: boolean
   resultImages?: boolean
+  published?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -900,6 +930,7 @@ export type ProjectSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   results?: boolean
   goalImages?: boolean
   resultImages?: boolean
+  published?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["project"]>
@@ -921,11 +952,12 @@ export type ProjectSelectScalar = {
   results?: boolean
   goalImages?: boolean
   resultImages?: boolean
+  published?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "subtitle" | "client" | "logo" | "services" | "technologies" | "website" | "thumbnail" | "about" | "goal" | "execution" | "results" | "goalImages" | "resultImages" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
+export type ProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "slug" | "title" | "subtitle" | "client" | "logo" | "services" | "technologies" | "website" | "thumbnail" | "about" | "goal" | "execution" | "results" | "goalImages" | "resultImages" | "published" | "createdAt" | "updatedAt", ExtArgs["result"]["project"]>
 export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tags?: boolean | Prisma.Project$tagsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
@@ -955,6 +987,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     results: string
     goalImages: string[]
     resultImages: string[]
+    published: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["project"]>
@@ -1397,6 +1430,7 @@ export interface ProjectFieldRefs {
   readonly results: Prisma.FieldRef<"Project", 'String'>
   readonly goalImages: Prisma.FieldRef<"Project", 'String[]'>
   readonly resultImages: Prisma.FieldRef<"Project", 'String[]'>
+  readonly published: Prisma.FieldRef<"Project", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Project", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Project", 'DateTime'>
 }
