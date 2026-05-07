@@ -16,6 +16,7 @@ import { MailService } from '../../mail/mail.service';
 import { UsersService } from '../../users/users.service';
 import { mapStringToProviderEnum } from '../shared/types/provider.types';
 import { IpGeolocationService } from '../core/ip-geolocation.service';
+import { TokenService } from './token.service';
 
 export interface JwtPayload {
   sub: string;
@@ -43,6 +44,7 @@ export interface AuthResponse {
     provider: string;
     isEmailVerified: boolean;
     isTwoFactorEnabled: boolean;
+    roles: string[];
   };
   accessToken: string;
   refreshToken: string;
@@ -57,6 +59,7 @@ export interface RegisterResponse {
     provider: string;
     isEmailVerified: boolean;
     isTwoFactorEnabled: boolean;
+    roles: string[];
   };
 }
 
@@ -80,7 +83,8 @@ export class AuthCoreService {
     private readonly prisma: DatabaseService,
     private readonly loggerService: LoggerService,
     private readonly ipGeolocationService: IpGeolocationService,
-  ) {}
+    private readonly tokenService: TokenService,
+  ) { }
 
   async validateUser(email: string, password: string): Promise<any> {
     try {
@@ -197,6 +201,7 @@ export class AuthCoreService {
           provider: primaryProvider,
           isEmailVerified: userResult.isEmailVerified,
           isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+          roles: userResult.roles,
         },
       };
     } catch (error) {
@@ -235,7 +240,7 @@ export class AuthCoreService {
       };
     }
 
-    const tokens = await this.generateTokens(
+    const tokens = await this.tokenService.generateTokens(
       user.id,
       user.email,
       user.roles,
@@ -261,269 +266,14 @@ export class AuthCoreService {
         provider: primaryProvider?.provider || 'local',
         isEmailVerified: userResult.isEmailVerified,
         isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+        roles: userResult.roles,
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
     };
   }
 
-  async generateTokens(
-    userId: string,
-    email: string,
-    roles: string[],
-    rememberMe = false,
-    ipAddress?: string,
-    userAgent?: string,
-    deviceInfo?: any,
-    additionalHeaders?: Record<string, string>,
-  ): Promise<{ accessToken: string; refreshToken: string; session: any }> {
-    try {
-      const jwtSecret = this.configService.get<string>('JWT_SECRET');
 
-      // Generate session expiry and refresh token expiry
-      const sessionExpiryHours = rememberMe ? 30 * 24 : 24; // 30 days or 24 hours
-      const refreshTokenExpiryHours = rememberMe ? 30 * 24 : 7 * 24; // 30 days or 7 days
-
-      // Create user session with enhanced security
-      const session = await this.createUserSession(
-        userId,
-        rememberMe,
-        ipAddress,
-        userAgent,
-        deviceInfo,
-        additionalHeaders,
-      );
-
-      // Create base payload
-      const crypto = require('crypto');
-      const tokenFamily = crypto.randomBytes(16).toString('hex');
-      const payload: JwtPayload = {
-        sub: userId,
-        email,
-        roles,
-        rememberMe,
-        sessionId: session.sessionId, // Include session ID in token
-        tokenFamily,
-      };
-
-      const accessTokenExpiresInSeconds =
-        this.configService.get<number>('jwt.accessTokenExpiresInSeconds') || 86400;
-      const refreshTokenExpiresInSeconds = rememberMe
-        ? this.configService.get<number>('jwt.refreshTokenRememberMeExpiresInSeconds') || 2592000
-        : this.configService.get<number>('jwt.refreshTokenExpiresInSeconds') || 604800;
-
-      // Generate access token
-      const accessToken = await this.jwtService.signAsync(payload, {
-        secret: jwtSecret,
-        expiresIn: accessTokenExpiresInSeconds,
-      });
-
-      // Generate refresh token with session info
-      const refreshPayload: JwtPayload = {
-        sub: userId,
-        email,
-        roles,
-        rememberMe,
-        sessionId: session.sessionId,
-        tokenFamily: payload.tokenFamily,
-      };
-
-      const refreshToken = await this.jwtService.signAsync(refreshPayload, {
-        secret: jwtSecret,
-        expiresIn: refreshTokenExpiresInSeconds,
-      });
-
-      // Store refresh token in database
-      await this.storeRefreshToken(
-        session.id,
-        refreshToken,
-        payload.tokenFamily || '',
-        ipAddress,
-        userAgent,
-      );
-
-      this.logger.log(`✅ Generated tokens for session ${session.sessionId}`);
-      return { accessToken, refreshToken, session };
-    } catch (error) {
-      this.logger.error(
-        `Failed to generate tokens for user ${userId}:`,
-        error.message,
-      );
-      throw error;
-    }
-  }
-
-  private async createUserSession(
-    userId: string,
-    rememberMe = false,
-    ipAddress?: string,
-    userAgent?: string,
-    deviceInfo?: any,
-    additionalHeaders?: Record<string, string>,
-  ): Promise<any> {
-    try {
-      // Generate device fingerprint
-      const browserFingerprintHash = this.generateBrowserFingerprintHash(
-        userAgent || '',
-        additionalHeaders,
-      );
-
-      // Detect geolocation
-      const geolocation = ipAddress
-        ? await this.detectGeolocation(ipAddress)
-        : {};
-
-      // Calculate session expiry
-      const sessionExpiryHours = rememberMe ? 30 * 24 : 24; // 30 days or 24 hours
-      const expiresAt = new Date(
-        Date.now() + sessionExpiryHours * 60 * 60 * 1000,
-      );
-
-      // Generate unique session ID
-      const sessionId = require('crypto').randomBytes(32).toString('hex');
-
-      // Create enhanced session data
-      const sessionData = {
-        userId,
-        sessionId,
-        deviceInfo: {
-          ...deviceInfo,
-          fingerprintGeneratedAt: new Date().toISOString(),
-        },
-        ipAddress,
-        userAgent,
-        location: geolocation.location,
-        browserFingerprintHash,
-        deviceFingerprintConfidence: 0.8, // Default confidence for basic implementation
-        latitude: geolocation.latitude,
-        longitude: geolocation.longitude,
-        timezone: geolocation.timezone,
-        rememberMe,
-        expiresAt,
-      };
-
-      const session = await this.prisma.userSession.create({
-        data: sessionData,
-      });
-
-      this.logger.log(
-        `✅ Created enhanced session ${sessionId} for user ${userId}`,
-      );
-
-      return session;
-    } catch (error) {
-      this.logger.error(
-        `Failed to create enhanced user session for user ${userId}:`,
-        error.message,
-      );
-      throw error;
-    }
-  }
-
-  private generateBrowserFingerprintHash(
-    userAgent: string,
-    additionalHeaders?: Record<string, string>,
-  ): string {
-    try {
-      const crypto = require('crypto');
-
-      // Create fingerprint from User-Agent and additional headers
-      const fingerprintData = {
-        userAgent: userAgent || '',
-        acceptLanguage: additionalHeaders?.['accept-language'] || '',
-        acceptEncoding: additionalHeaders?.['accept-encoding'] || '',
-        accept: additionalHeaders?.['accept'] || '',
-        dnt: additionalHeaders?.['dnt'] || '',
-        secChUa: additionalHeaders?.['sec-ch-ua'] || '',
-        secChUaMobile: additionalHeaders?.['sec-ch-ua-mobile'] || '',
-        secChUaPlatform: additionalHeaders?.['sec-ch-ua-platform'] || '',
-      };
-
-      // Create a stable hash from the fingerprint data
-      const fingerprintString = JSON.stringify(
-        fingerprintData,
-        Object.keys(fingerprintData).sort(),
-      );
-      return crypto
-        .createHash('sha256')
-        .update(fingerprintString)
-        .digest('hex');
-    } catch (error) {
-      this.logger.warn(
-        'Failed to generate browser fingerprint hash:',
-        error.message,
-      );
-      return '';
-    }
-  }
-
-  private async detectGeolocation(ipAddress: string): Promise<{
-    latitude?: number;
-    longitude?: number;
-    timezone?: string;
-    location?: string;
-  }> {
-    try {
-      const geolocationResult = await this.ipGeolocationService.detectGeolocation(ipAddress);
-      return {
-        latitude: geolocationResult.latitude,
-        longitude: geolocationResult.longitude,
-        timezone: geolocationResult.timezone,
-        location: geolocationResult.location,
-      };
-    } catch (error) {
-      this.logger.warn(
-        `Failed to detect geolocation for IP ${ipAddress}:`,
-        error.message,
-      );
-      return {};
-    }
-  }
-
-  private async storeRefreshToken(
-    sessionId: string,
-    refreshToken: string,
-    tokenFamily: string,
-    ipAddress?: string,
-    userAgent?: string,
-  ): Promise<any> {
-    try {
-      // Generate token hash for secure storage
-      const tokenHash = await bcrypt.hash(refreshToken, 12);
-
-      // Use the tokenFamily from the JWT payload (already generated)
-
-      // Calculate token expiry
-      const rememberMeSession = await this.prisma.userSession.findUnique({
-        where: { id: sessionId },
-        select: { rememberMe: true },
-      });
-      const tokenExpiryHours = rememberMeSession?.rememberMe ? 30 * 24 : 7 * 24; // 30 days or 7 days
-      const expiresAt = new Date(
-        Date.now() + tokenExpiryHours * 60 * 60 * 1000,
-      );
-
-      const refreshTokenRecord = await this.prisma.refreshToken.create({
-        data: {
-          sessionId,
-          tokenHash,
-          tokenFamily,
-          ipAddress,
-          userAgent,
-          expiresAt,
-        },
-      });
-
-      this.logger.log(`✅ Stored refresh token for session ${sessionId}`);
-      return refreshTokenRecord;
-    } catch (error) {
-      this.logger.error(
-        `Failed to store refresh token for session ${sessionId}:`,
-        error.message,
-      );
-      throw error;
-    }
-  }
 
   async validateOAuthUser(oauthUser: {
     email: string;
@@ -630,7 +380,7 @@ export class AuthCoreService {
     });
 
     // For OAuth login, bypass 2FA check and directly generate tokens
-    const tokens = await this.generateTokens(
+    const tokens = await this.tokenService.generateTokens(
       validatedUser.id,
       validatedUser.email,
       validatedUser.roles || [],
@@ -655,6 +405,7 @@ export class AuthCoreService {
         provider: primaryProvider?.provider || 'google',
         isEmailVerified: userResult.isEmailVerified,
         isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+        roles: userResult.roles,
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -676,7 +427,7 @@ export class AuthCoreService {
     });
 
     // For OAuth login, bypass 2FA check and directly generate tokens
-    const tokens = await this.generateTokens(
+    const tokens = await this.tokenService.generateTokens(
       validatedUser.id,
       validatedUser.email,
       validatedUser.roles || [],
@@ -701,6 +452,7 @@ export class AuthCoreService {
         provider: primaryProvider?.provider || 'facebook',
         isEmailVerified: userResult.isEmailVerified,
         isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+        roles: userResult.roles,
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -723,7 +475,7 @@ export class AuthCoreService {
     });
 
     // For OAuth login, bypass 2FA check and directly generate tokens
-    const tokens = await this.generateTokens(
+    const tokens = await this.tokenService.generateTokens(
       validatedUser.id,
       validatedUser.email,
       validatedUser.roles || [],
@@ -748,6 +500,7 @@ export class AuthCoreService {
         provider: primaryProvider?.provider || 'github',
         isEmailVerified: userResult.isEmailVerified,
         isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+        roles: userResult.roles,
       },
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -1024,7 +777,7 @@ export class AuthCoreService {
       this.logger.log(
         `✅ TOTP code verified successfully, generating tokens for user: ${user.email}`,
       );
-      const tokens = await this.generateTokens(
+      const tokens = await this.tokenService.generateTokens(
         user.id,
         user.email,
         user.roles,
@@ -1054,6 +807,7 @@ export class AuthCoreService {
           provider: primaryProvider?.provider || 'local',
           isEmailVerified: userResult.isEmailVerified,
           isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+          roles: userResult.roles,
         },
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
@@ -1155,7 +909,7 @@ export class AuthCoreService {
         `✅ Backup code used successfully for user: ${user.email}. Remaining codes: ${remainingBackupCodes.length}`,
       );
 
-      const tokens = await this.generateTokens(
+      const tokens = await this.tokenService.generateTokens(
         user.id,
         user.email,
         user.roles,
@@ -1182,6 +936,7 @@ export class AuthCoreService {
           provider: primaryProvider?.provider || 'local',
           isEmailVerified: userResult.isEmailVerified,
           isTwoFactorEnabled: userResult.isTwoFactorEnabled,
+          roles: userResult.roles,
         },
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,

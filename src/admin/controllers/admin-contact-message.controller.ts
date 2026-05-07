@@ -13,6 +13,7 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
+
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -22,6 +23,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { LoggingInterceptor } from '../../common/interceptors/logging.interceptor';
 import { ResponseInterceptor } from '../../common/interceptors/response.interceptor';
 import { PermissionUtils } from '../../common/utils/permission.util';
+import { AdminContactMessageQueryDto } from '../dto/admin-contact-message-query.dto';
 import { AdminContactMessageService } from '../services/admin-contact-message.service';
 
 interface ApiResponse<T = any> {
@@ -41,7 +43,7 @@ interface ApiResponse<T = any> {
 export class AdminContactMessageController {
   constructor(
     private readonly adminContactMessageService: AdminContactMessageService
-  ) {}
+  ) { }
 
   private createSuccessResponse<T>(message: string, data?: T): ApiResponse<T> {
     return { success: true, message, data };
@@ -92,7 +94,7 @@ export class AdminContactMessageController {
     },
   })
   async getAllContactMessages(
-    @Query() query: any,
+    @Query() query: AdminContactMessageQueryDto,
     @User() adminUser: any,
   ): Promise<ApiResponse<any>> {
     try {
@@ -109,6 +111,37 @@ export class AdminContactMessageController {
       return this.createErrorResponse(
         error.message || 'Failed to retrieve contact messages',
         'CONTACT_MESSAGE_RETRIEVAL_FAILED',
+        error.name,
+      );
+    }
+  }
+
+  @Get('stats')
+  @ApiOperation({
+    summary: 'Get contact message statistics (Admin)',
+    description: 'Get total, daily, and weekly contact message counts',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Contact message statistics retrieved successfully',
+  })
+  async getContactMessageStats(
+    @User() adminUser: any,
+  ): Promise<ApiResponse<any>> {
+    try {
+      // Use PermissionUtils for consistent role checking
+      PermissionUtils.requireStaff(adminUser.roles);
+
+      const stats = await this.adminContactMessageService.getContactMessageSummary();
+
+      return this.createSuccessResponse(
+        'Contact message statistics retrieved successfully',
+        stats,
+      );
+    } catch (error) {
+      return this.createErrorResponse(
+        error.message || 'Failed to retrieve contact message statistics',
+        'CONTACT_MESSAGE_STATS_FAILED',
         error.name,
       );
     }
@@ -230,6 +263,8 @@ export class AdminContactMessageController {
       );
     }
   }
+
+
 
   @Get('analytics/overview')
   @ApiOperation({

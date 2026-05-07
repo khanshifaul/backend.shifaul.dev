@@ -2,7 +2,7 @@
 import { DocumentBuilder } from '@nestjs/swagger';
 
 export const SWAGGER_CONFIG = {
-  title: 'Pixlyone NestJS API',
+  title: 'Shifaul.dev API',
   description:
     'A robust backend API with authentication, command execution, and real-time updates',
   version: '1.0.0',
@@ -57,7 +57,7 @@ export const SWAGGER_CONFIG = {
       name: 'User Management',
       tags: ['Users'],
     },
-        {
+    {
       name: 'Support',
       tags: ['Support Tickets'],
     },

@@ -26,6 +26,7 @@ import { BlogPostsModule } from './blog-posts/blog-posts.module';
 import { ProjectsModule } from './projects/projects.module';
 import { ContactMessagesModule } from './contact-messages/contact-messages.module';
 import { NewsletterSubscribersModule } from './newsletter-subscribers/newsletter-subscribers.module';
+import { StorageModule } from './storage/storage.module';
 import { LoggerService } from './utils/logger/logger.service';
 
 @Module({
@@ -90,6 +91,7 @@ import { LoggerService } from './utils/logger/logger.service';
     ProjectsModule,
     ContactMessagesModule,
     NewsletterSubscribersModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [

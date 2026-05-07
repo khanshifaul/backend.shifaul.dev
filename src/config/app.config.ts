@@ -115,5 +115,14 @@ export const appConfig = () => {
       user: process.env.SMTP_USER ?? '',
       pass: process.env.SMTP_PASS ?? '',
     },
+
+    // Cloudflare R2 configuration
+    r2: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID ?? '',
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY ?? '',
+      bucketName: process.env.R2_BUCKET_NAME ?? '',
+      accountId: process.env.R2_ACCOUNT_ID ?? '',
+      publicUrl: process.env.R2_PUBLIC_URL ?? '',
+    },
   };
 };

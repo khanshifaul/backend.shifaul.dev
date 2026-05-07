@@ -1,13 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsArray,
-  IsUrl,
-  IsNotEmpty,
-  MinLength,
-  MaxLength,
   ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 
 export class CreateProjectDto {
@@ -167,6 +168,16 @@ export class CreateProjectDto {
   @IsUrl(undefined, { each: true })
   @ArrayMaxSize(10)
   resultImages?: string[];
+
+  @ApiProperty({
+    description: 'Publication status of the project',
+    example: true,
+    type: Boolean,
+    default: true,
+    required: false,
+  })
+  @IsBoolean()
+  published?: boolean;
 
   @ApiProperty({
     description: 'Project tags/categories',

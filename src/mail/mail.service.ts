@@ -44,7 +44,7 @@ export class MailService {
       </head>
       <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-          <h1 style="margin: 0; font-size: 28px;">Welcome to Pixlyone! 🚀</h1>
+          <h1 style="margin: 0; font-size: 28px;">Welcome to Shifaul.dev! 🚀</h1>
         </div>
         
         <div style="background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e9ecef;">
@@ -82,7 +82,7 @@ export class MailService {
 
     const mailOptions: EmailOptions = {
       to: email,
-      subject: '🔐 Verify Your Email Address - Pixlyone',
+      subject: '🔐 Verify Your Email Address - Shifaul.dev',
       html,
     };
 
@@ -150,7 +150,7 @@ export class MailService {
 
     const mailOptions: EmailOptions = {
       to: email,
-      subject: '🔑 Reset Your Password - Pixlyone',
+      subject: '🔑 Reset Your Password - Shifaul.dev',
       html,
     };
 
@@ -190,16 +190,15 @@ export class MailService {
             ${message}
           </p>
 
-          ${
-            details
-              ? `
+          ${details
+        ? `
           <div style="background: #fff; padding: 15px; border-radius: 5px; border-left: 4px solid #ff6b6b; margin: 20px 0;">
             <h3 style="margin-top: 0; color: #333;">Details:</h3>
             <pre style="color: #666; font-size: 14px; white-space: pre-wrap;">${JSON.stringify(details, null, 2)}</pre>
           </div>
           `
-              : ''
-          }
+        : ''
+      }
 
           <div style="text-align: center; margin: 30px 0;">
             <a href="${this.configService.get('FRONTEND_URL', 'http://localhost:5173')}/account/security"
@@ -223,7 +222,7 @@ export class MailService {
 
     const mailOptions: EmailOptions = {
       to: email,
-      subject: `🚨 ${subject} - Pixlyone Security`,
+      subject: `🚨 ${subject} - Shifaul.dev Security`,
       html,
     };
 
@@ -291,7 +290,7 @@ export class MailService {
 
     const mailOptions: EmailOptions = {
       to: email,
-      subject: `📊 ${subject} - Pixlyone Security`,
+      subject: `📊 ${subject} - Shifaul.dev Security`,
       html,
     };
 

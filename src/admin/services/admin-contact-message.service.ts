@@ -7,13 +7,11 @@ export class AdminContactMessageService {
   constructor(
     private readonly prisma: DatabaseService,
     private readonly logger: LoggerService,
-  ) {}
+  ) { }
 
   async getAllContactMessages(query: any) {
     try {
       const {
-        page = 1,
-        limit = 10,
         status,
         priority,
         search,
@@ -21,6 +19,9 @@ export class AdminContactMessageService {
         sortOrder,
         email,
       } = query;
+
+      const page = parseInt(query.page as string) || 1;
+      const limit = parseInt(query.limit as string) || 10;
 
       const where: any = {};
 
@@ -175,7 +176,7 @@ export class AdminContactMessageService {
     }
   }
 
-  private async getContactMessageSummary() {
+  public async getContactMessageSummary() {
     const totalMessages = await this.prisma.contactMessage.count();
 
     const today = new Date();

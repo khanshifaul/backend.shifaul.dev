@@ -2,8 +2,8 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { DatabaseService } from '../database/database.service';
 import { LoggerService } from '../utils/logger/logger.service';
 import { CreateProjectDto } from './dto/create-project.dto';
-import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectQueryDto } from './dto/project-query.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -43,6 +43,7 @@ export class ProjectsService {
           results: dto.results,
           goalImages: dto.goalImages || [],
           resultImages: dto.resultImages || [],
+          published: dto.published !== undefined ? dto.published : true,
           tags: {
             connectOrCreate: tagConnections,
           },
@@ -288,9 +289,9 @@ export class ProjectsService {
   async getPublicProjectById(projectId: string) {
     try {
       const project = await this.prisma.project.findFirst({
-        where: { 
+        where: {
           id: projectId,
-          published: true 
+          published: true
         },
         include: {
           tags: {
@@ -347,9 +348,9 @@ export class ProjectsService {
   async getPublicProjectBySlug(slug: string) {
     try {
       const project = await this.prisma.project.findFirst({
-        where: { 
+        where: {
           slug,
-          published: true 
+          published: true
         },
         include: {
           tags: {
@@ -444,9 +445,9 @@ export class ProjectsService {
   async getPublicRelatedProjects(projectId: string, limit: number = 5) {
     try {
       const currentProject = await this.prisma.project.findFirst({
-        where: { 
+        where: {
           id: projectId,
-          published: true 
+          published: true
         },
         include: {
           tags: true,
@@ -553,6 +554,7 @@ export class ProjectsService {
       if (dto.results !== undefined) updateData.results = dto.results;
       if (dto.goalImages !== undefined) updateData.goalImages = dto.goalImages;
       if (dto.resultImages !== undefined) updateData.resultImages = dto.resultImages;
+      if (dto.published !== undefined) updateData.published = dto.published;
 
       if (dto.tags !== undefined) {
         const tagConnections = await this.connectOrCreateTags(dto.tags);
@@ -622,7 +624,7 @@ export class ProjectsService {
   async getProjectStats() {
     try {
       const totalProjects = await this.prisma.project.count();
-      
+
       const clientsCount = await this.prisma.project.count({
         where: {
           client: {

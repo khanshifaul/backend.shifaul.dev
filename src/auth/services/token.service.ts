@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { DatabaseService } from '../../database/database.service';
 import { UsersService } from '../../users/users.service';
 import { IpGeolocationService } from '../core/ip-geolocation.service';
@@ -92,7 +92,6 @@ export class TokenService {
       );
 
       // Create base payload
-      const crypto = require('crypto');
       const tokenFamily = crypto.randomBytes(16).toString('hex');
       const payload: JwtPayload = {
         sub: userId,
@@ -176,7 +175,6 @@ export class TokenService {
       }
 
       // Generate a NEW token family for rotation (keep same session)
-      const crypto = require('crypto');
       const newTokenFamily = crypto.randomBytes(16).toString('hex');
 
       // Create base payload using existing session info
@@ -689,7 +687,6 @@ export class TokenService {
       );
 
       // Generate unique session ID
-      const crypto = require('crypto');
       const sessionId = crypto.randomBytes(32).toString('hex');
 
       // Create enhanced session data
@@ -748,7 +745,11 @@ export class TokenService {
       this.logger.log(`🔍 Token Family: ${tokenFamily}`);
       this.logger.log(`🔍 Refresh Token Length: ${refreshToken.length}`);
 
-      const tokenHash = await bcrypt.hash(refreshToken, 12);
+      // Use SHA-256 for token hashing (more performant than bcrypt for high-entropy tokens)
+      const tokenHash = crypto
+        .createHash('sha256')
+        .update(refreshToken)
+        .digest('hex');
 
       const rememberMeSession = await this.prisma.userSession.findUnique({
         where: { id: sessionId },

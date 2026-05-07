@@ -34,7 +34,7 @@ export class BlogPostsService {
           title: dto.title,
           slug: dto.slug,
           content: dto.content,
-          thumbnail: dto.thumbnail,
+          thumbnail: dto.thumbnail || '',
           published: dto.published || false,
           authorId: userId,
           authorName: userName,

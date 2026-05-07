@@ -1,14 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PartialType } from '@nestjs/swagger';
+import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
-  IsString,
-  IsOptional,
-  IsArray,
-  IsUrl,
-  IsNotEmpty,
-  MinLength,
-  MaxLength,
   ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+  MinLength,
 } from 'class-validator';
 import { CreateProjectDto } from './create-project.dto';
 
@@ -189,4 +189,13 @@ export class UpdateProjectDto extends PartialType(CreateProjectDto) {
   @IsString({ each: true })
   @ArrayMaxSize(20)
   tags?: string[];
+
+  @ApiProperty({
+    description: 'Whether the project is published and visible to public',
+    example: true,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  published?: boolean;
 }

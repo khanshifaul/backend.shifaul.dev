@@ -33,10 +33,11 @@ export class CreateBlogPostDto {
   @ApiProperty({
     description: 'URL of the thumbnail image',
     example: 'https://example.com/images/typescript-generics.jpg',
+    required: false,
   })
   @IsUrl()
-  @IsNotEmpty()
-  thumbnail: string;
+  @IsOptional()
+  thumbnail?: string;
 
   @ApiPropertyOptional({
     description: 'Array of tag names for the blog post',

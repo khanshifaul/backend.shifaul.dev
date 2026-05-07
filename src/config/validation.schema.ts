@@ -70,4 +70,11 @@ export const validationSchema = Joi.object({
   // Rate limiting
   THROTTLE_TTL: Joi.number().default(60000),
   THROTTLE_LIMIT: Joi.number().default(100),
+
+  // Cloudflare R2 Configuration
+  R2_ACCESS_KEY_ID: Joi.string().optional(),
+  R2_SECRET_ACCESS_KEY: Joi.string().optional(),
+  R2_BUCKET_NAME: Joi.string().optional(),
+  R2_ACCOUNT_ID: Joi.string().optional(),
+  R2_PUBLIC_URL: Joi.string().uri().optional(),
 });
