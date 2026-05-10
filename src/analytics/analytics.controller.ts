@@ -1,6 +1,5 @@
-import { Controller, Post, Body, Req } from '@nestjs/common';
+import { Controller, Post, Body, Req, Headers } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
-import express from 'express';
 
 @Controller('analytics')
 export class AnalyticsController {
@@ -14,10 +13,8 @@ export class AnalyticsController {
       referrer?: string;
       metadata?: any;
     },
-    @Req() req: express.Request,
+    @Headers('user-agent') userAgent?: string,
   ) {
-    const userAgent = req.headers['user-agent'];
-
     return this.analyticsService.trackEvent({
       ...data,
       userAgent,
