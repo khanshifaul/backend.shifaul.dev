@@ -146,6 +146,9 @@ importers:
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@5.1.0)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
@@ -219,9 +222,6 @@ importers:
       tsconfig-paths:
         specifier: ^4.2.0
         version: 4.2.0
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
