@@ -173,4 +173,30 @@ export class AdminUserGrowthController {
       );
     }
   }
+
+  @Get('visitor-stats')
+  @ApiOperation({
+    summary: 'Get visitor stats for the last 7 days',
+    description: 'Retrieve visitor stats (views and engagement) grouped by day for the last 7 days.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Visitor stats retrieved successfully',
+  })
+  async getVisitorStats(): Promise<ApiResponse> {
+    try {
+      const result = await this.adminUserGrowthService.getVisitorStats();
+      return this.createSuccessResponse(
+        'Visitor stats retrieved successfully',
+        result,
+      );
+    } catch (error) {
+      this.logger.error('Failed to retrieve visitor stats:', error.message);
+      return this.createErrorResponse(
+        error.message || 'Failed to retrieve visitor stats',
+        'VISITOR_STATS_ERROR',
+        error.name || 'UNKNOWN_ERROR',
+      );
+    }
+  }
 }

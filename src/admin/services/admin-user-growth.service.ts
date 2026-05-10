@@ -72,6 +72,63 @@ export class AdminUserGrowthService {
     }
   }
 
+  async getVisitorStats() {
+    try {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+      sevenDaysAgo.setHours(0, 0, 0, 0);
+
+      const events = await this.prisma.visitorEvent.findMany({
+        where: {
+          createdAt: {
+            gte: sevenDaysAgo,
+          },
+        },
+        orderBy: {
+          createdAt: 'asc',
+        },
+      });
+
+      // Group by day
+      const dayMap = new Map<string, { views: number; engagement: number }>();
+      
+      // Initialize last 7 days
+      for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          const dateStr = d.toISOString().split('T')[0];
+          dayMap.set(dateStr, { views: 0, engagement: 0 });
+      }
+
+      events.forEach((event) => {
+        const dateStr = event.createdAt.toISOString().split('T')[0];
+        const data = dayMap.get(dateStr);
+        if (data) {
+          if (event.event === 'page_view') {
+            data.views++;
+          } else {
+            data.engagement++;
+          }
+        }
+      });
+
+      // Convert to array
+      const result = Array.from(dayMap.entries()).map(([date, data]) => {
+        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+        return {
+          name: dayName,
+          views: data.views,
+          engagement: data.engagement,
+        };
+      });
+
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to get visitor stats:', error.message);
+      throw error;
+    }
+  }
+
   private calculateDateRange(query: AdminUserGrowthQueryDto): {
     startDate: Date;
     endDate: Date;
