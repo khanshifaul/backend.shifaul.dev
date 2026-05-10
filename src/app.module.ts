@@ -29,6 +29,7 @@ import { NewsletterSubscribersModule } from './newsletter-subscribers/newsletter
 import { StorageModule } from './storage/storage.module';
 import { LoggerService } from './utils/logger/logger.service';
 import { KeepAliveModule } from './keep-alive/keep-alive.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -94,6 +95,7 @@ import { KeepAliveModule } from './keep-alive/keep-alive.module';
     NewsletterSubscribersModule,
     StorageModule,
     KeepAliveModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

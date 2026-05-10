@@ -62,7 +62,8 @@ export const ModelName = {
   NewsletterSubscriber: 'NewsletterSubscriber',
   BlogPost: 'BlogPost',
   Tag: 'Tag',
-  Project: 'Project'
+  Project: 'Project',
+  VisitorEvent: 'VisitorEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -293,6 +294,19 @@ export const ProjectScalarFieldEnum = {
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const VisitorEventScalarFieldEnum = {
+  id: 'id',
+  event: 'event',
+  url: 'url',
+  referrer: 'referrer',
+  userAgent: 'userAgent',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitorEventScalarFieldEnum = (typeof VisitorEventScalarFieldEnum)[keyof typeof VisitorEventScalarFieldEnum]
 
 
 export const SortOrder = {

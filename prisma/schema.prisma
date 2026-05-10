@@ -327,3 +327,17 @@ model Project {
   @@index([published])
   @@map("projects")
 }
+
+model VisitorEvent {
+  id        String   @id @default(cuid())
+  event     String   // e.g., 'page_view', 'click'
+  url       String
+  referrer  String?
+  userAgent String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([event])
+  @@index([createdAt])
+  @@map("visitor_events")
+}

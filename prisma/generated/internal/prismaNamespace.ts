@@ -395,7 +395,8 @@ export const ModelName = {
   NewsletterSubscriber: 'NewsletterSubscriber',
   BlogPost: 'BlogPost',
   Tag: 'Tag',
-  Project: 'Project'
+  Project: 'Project',
+  VisitorEvent: 'VisitorEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -411,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "authProvider" | "userSession" | "refreshToken" | "supportTicket" | "ticketReply" | "ticketReopenRequest" | "contactMessage" | "newsletterSubscriber" | "blogPost" | "tag" | "project"
+    modelProps: "user" | "authProvider" | "userSession" | "refreshToken" | "supportTicket" | "ticketReply" | "ticketReopenRequest" | "contactMessage" | "newsletterSubscriber" | "blogPost" | "tag" | "project" | "visitorEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1303,6 +1304,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    VisitorEvent: {
+      payload: Prisma.$VisitorEventPayload<ExtArgs>
+      fields: Prisma.VisitorEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.VisitorEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.VisitorEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        findFirst: {
+          args: Prisma.VisitorEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.VisitorEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        findMany: {
+          args: Prisma.VisitorEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>[]
+        }
+        create: {
+          args: Prisma.VisitorEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        createMany: {
+          args: Prisma.VisitorEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.VisitorEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>[]
+        }
+        delete: {
+          args: Prisma.VisitorEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        update: {
+          args: Prisma.VisitorEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.VisitorEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.VisitorEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.VisitorEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.VisitorEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$VisitorEventPayload>
+        }
+        aggregate: {
+          args: Prisma.VisitorEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateVisitorEvent>
+        }
+        groupBy: {
+          args: Prisma.VisitorEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitorEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.VisitorEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.VisitorEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1554,6 +1629,19 @@ export const ProjectScalarFieldEnum = {
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const VisitorEventScalarFieldEnum = {
+  id: 'id',
+  event: 'event',
+  url: 'url',
+  referrer: 'referrer',
+  userAgent: 'userAgent',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type VisitorEventScalarFieldEnum = (typeof VisitorEventScalarFieldEnum)[keyof typeof VisitorEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1870,6 +1958,7 @@ export type GlobalOmitConfig = {
   blogPost?: Prisma.BlogPostOmit
   tag?: Prisma.TagOmit
   project?: Prisma.ProjectOmit
+  visitorEvent?: Prisma.VisitorEventOmit
 }
 
 /* Types for Logging */

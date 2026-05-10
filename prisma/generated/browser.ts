@@ -77,3 +77,8 @@ export type Tag = Prisma.TagModel
  * 
  */
 export type Project = Prisma.ProjectModel
+/**
+ * Model VisitorEvent
+ * 
+ */
+export type VisitorEvent = Prisma.VisitorEventModel
