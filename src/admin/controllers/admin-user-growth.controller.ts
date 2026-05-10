@@ -176,16 +176,16 @@ export class AdminUserGrowthController {
 
   @Get('visitor-stats')
   @ApiOperation({
-    summary: 'Get visitor stats for the last 7 days',
-    description: 'Retrieve visitor stats (views and engagement) grouped by day for the last 7 days.',
+    summary: 'Get visitor stats',
+    description: 'Retrieve visitor stats (views and engagement) grouped by day or month.',
   })
   @ApiResponse({
     status: 200,
     description: 'Visitor stats retrieved successfully',
   })
-  async getVisitorStats(): Promise<ApiResponse> {
+  async getVisitorStats(@Query('timeRange') timeRange?: string): Promise<ApiResponse> {
     try {
-      const result = await this.adminUserGrowthService.getVisitorStats();
+      const result = await this.adminUserGrowthService.getVisitorStats(timeRange);
       return this.createSuccessResponse(
         'Visitor stats retrieved successfully',
         result,
@@ -195,6 +195,32 @@ export class AdminUserGrowthController {
       return this.createErrorResponse(
         error.message || 'Failed to retrieve visitor stats',
         'VISITOR_STATS_ERROR',
+        error.name || 'UNKNOWN_ERROR',
+      );
+    }
+  }
+
+  @Get('active-visitors')
+  @ApiOperation({
+    summary: 'Get active visitors count',
+    description: 'Retrieve the number of unique sessions in the last 5 minutes.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Active visitors retrieved successfully',
+  })
+  async getActiveVisitors(): Promise<ApiResponse> {
+    try {
+      const result = await this.adminUserGrowthService.getActiveVisitors();
+      return this.createSuccessResponse(
+        'Active visitors retrieved successfully',
+        result,
+      );
+    } catch (error) {
+      this.logger.error('Failed to retrieve active visitors:', error.message);
+      return this.createErrorResponse(
+        error.message || 'Failed to retrieve active visitors',
+        'ACTIVE_VISITORS_ERROR',
         error.name || 'UNKNOWN_ERROR',
       );
     }

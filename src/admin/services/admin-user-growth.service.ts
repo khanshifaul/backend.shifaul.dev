@@ -72,16 +72,38 @@ export class AdminUserGrowthService {
     }
   }
 
-  async getVisitorStats() {
+  async getVisitorStats(timeRange: string = '7d') {
     try {
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
-      sevenDaysAgo.setHours(0, 0, 0, 0);
+      const now = new Date();
+      let startDate = new Date();
+      let groupBy: 'day' | 'month' = 'day';
+
+      switch (timeRange) {
+        case '30d':
+          startDate.setDate(now.getDate() - 29);
+          break;
+        case 'year':
+          startDate.setFullYear(now.getFullYear() - 1);
+          groupBy = 'month';
+          break;
+        case '7d':
+        default:
+          startDate.setDate(now.getDate() - 6);
+          break;
+      }
+
+      startDate.setHours(0, 0, 0, 0);
+
+      // Enforce start date from May 10, 2026
+      const minStartDate = new Date('2026-05-10T00:00:00Z');
+      if (startDate < minStartDate) {
+        startDate = minStartDate;
+      }
 
       const events = await this.prisma.visitorEvent.findMany({
         where: {
           createdAt: {
-            gte: sevenDaysAgo,
+            gte: startDate,
           },
         },
         orderBy: {
@@ -89,20 +111,36 @@ export class AdminUserGrowthService {
         },
       });
 
-      // Group by day
-      const dayMap = new Map<string, { views: number; engagement: number }>();
+      // Group by day or month
+      const map = new Map<string, { views: number; engagement: number }>();
       
-      // Initialize last 7 days
-      for (let i = 6; i >= 0; i--) {
+      // Initialize map based on group by
+      if (groupBy === 'day') {
+        const days = Math.floor((now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        for (let i = days; i >= 0; i--) {
           const d = new Date();
-          d.setDate(d.getDate() - i);
+          d.setDate(now.getDate() - i);
           const dateStr = d.toISOString().split('T')[0];
-          dayMap.set(dateStr, { views: 0, engagement: 0 });
+          map.set(dateStr, { views: 0, engagement: 0 });
+        }
+      } else {
+        // Monthly for 'year'
+        for (let i = 11; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(now.getMonth() - i);
+          const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          map.set(dateStr, { views: 0, engagement: 0 });
+        }
       }
 
+      let totalEmqScore = 0;
+
       events.forEach((event) => {
-        const dateStr = event.createdAt.toISOString().split('T')[0];
-        const data = dayMap.get(dateStr);
+        const dateStr = groupBy === 'day' 
+          ? event.createdAt.toISOString().split('T')[0]
+          : `${event.createdAt.getFullYear()}-${String(event.createdAt.getMonth() + 1).padStart(2, '0')}`;
+          
+        const data = map.get(dateStr);
         if (data) {
           if (event.event === 'page_view') {
             data.views++;
@@ -110,21 +148,73 @@ export class AdminUserGrowthService {
             data.engagement++;
           }
         }
+
+        // Calculate EMQ Score for this event
+        const metadata = event.metadata as any;
+        let score = 0;
+        if (metadata) {
+          if (metadata.ip) score += 3;
+          if (metadata.userAgent) score += 2;
+          if (metadata.location) score += 2;
+          if (metadata.screenResolution) score += 1;
+          if (metadata.language) score += 1;
+          if (metadata.referrer) score += 1;
+        }
+        totalEmqScore += score;
       });
 
+      const avgEmqScore = events.length > 0 ? (totalEmqScore / events.length).toFixed(1) : '0.0';
+
       // Convert to array
-      const result = Array.from(dayMap.entries()).map(([date, data]) => {
-        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+      const result = Array.from(map.entries()).map(([date, data]) => {
+        const name = groupBy === 'day'
+          ? (timeRange === '7d' 
+              ? new Date(date).toLocaleDateString('en-US', { weekday: 'short' })
+              : new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))
+          : new Date(date + '-01').toLocaleDateString('en-US', { month: 'short' });
         return {
-          name: dayName,
+          name,
           views: data.views,
           engagement: data.engagement,
         };
       });
 
-      return result;
+      return {
+        stats: result,
+        avgEmqScore,
+      };
     } catch (error) {
       this.logger.error('Failed to get visitor stats:', error.message);
+      throw error;
+    }
+  }
+
+  async getActiveVisitors() {
+    try {
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+      
+      const events = await this.prisma.visitorEvent.findMany({
+        where: {
+          createdAt: {
+            gte: fiveMinutesAgo,
+          },
+        },
+        select: {
+          metadata: true,
+        },
+      });
+
+      const uniqueSessions = new Set();
+      events.forEach((event) => {
+        const metadata = event.metadata as any;
+        if (metadata && metadata.sessionId) {
+          uniqueSessions.add(metadata.sessionId);
+        }
+      });
+
+      return uniqueSessions.size;
+    } catch (error) {
+      this.logger.error('Failed to get active visitors:', error.message);
       throw error;
     }
   }
