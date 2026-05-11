@@ -1,11 +1,13 @@
 import { Controller, Post, Body, Req, Headers } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
 import type { Request } from 'express';
+import { Public } from '../common/decorators/public.decorator';
 
 @Controller('analytics')
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) { }
 
+  @Public()
   @Post('collect')
   async collectEvent(
     @Body() data: {
