@@ -70,4 +70,49 @@ export class StorageService {
             throw new InternalServerErrorException('Could not generate upload URL');
         }
     }
+
+    /**
+     * Uploads a file directly to Cloudflare R2
+     * @param file File buffer
+     * @param fileName Original file name
+     * @param contentType MIME type of the file
+     * @param folder Optional folder path in the bucket
+     * @returns The public URL of the uploaded file
+     */
+    async uploadFile(
+        file: Buffer,
+        fileName: string,
+        contentType: string,
+        folder?: string,
+    ) {
+        try {
+            const fileExtension = fileName.split('.').pop();
+            const uniqueFileName = `${uuidv4()}.${fileExtension}`;
+            const key = folder ? `${folder}/${uniqueFileName}` : uniqueFileName;
+
+            const command = new PutObjectCommand({
+                Bucket: this.bucketName,
+                Key: key,
+                ContentType: contentType,
+                Body: file,
+            });
+
+            await this.s3Client.send(command);
+
+            // Clean up public URL (ensure no trailing slash)
+            const basePublicUrl = this.publicUrl.endsWith('/')
+                ? this.publicUrl.slice(0, -1)
+                : this.publicUrl;
+
+            const finalPublicUrl = `${basePublicUrl}/${key}`;
+
+            return {
+                fileUrl: finalPublicUrl,
+                key,
+            };
+        } catch (error) {
+            this.logger.error('Error uploading file to R2', error.message);
+            throw new InternalServerErrorException('Could not upload file');
+        }
+    }
 }
