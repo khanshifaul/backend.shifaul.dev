@@ -1,24 +1,15 @@
 // src/admin/admin.controller.ts
 import {
-  Body,
   Controller,
-  Get,
   Logger,
-  Param,
-  Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import type { Request } from 'express';
 import { Roles } from '../common/decorators/roles.decorator';
-import { User } from '../common/decorators/user.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { AdminService } from './admin.service';
 

@@ -1,7 +1,7 @@
 // Enhanced OAuth callback error handling utility
 // Provides comprehensive error handling for OAuth flows
 
-import { BadRequestException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import type { Response } from 'express';
 import { UrlConfigService } from '../../config/url.config';
 
@@ -138,7 +138,7 @@ export class OAuthErrorHandler {
   private static generateErrorRedirectUrl(
     urlConfigService: UrlConfigService,
     errorContext: OAuthErrorContext,
-    res: Response,
+    _res: Response,
   ): string {
     // For some errors, we might want to show a different page or message
     const errorParams = {

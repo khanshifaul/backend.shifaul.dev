@@ -36,7 +36,7 @@ export class ValidationUtils {
       errors.push('Password must contain at least one number');
     }
 
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
       errors.push('Password must contain at least one special character');
     }
 
@@ -54,7 +54,7 @@ export class ValidationUtils {
 
     return input
       .trim()
-      .replace(/[<>\"'&]/g, '') // Remove potentially dangerous characters
+      .replace(/[<>"'&]/g, '') // Remove potentially dangerous characters
       .substring(0, 1000); // Limit length
   }
 

@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 
 @Injectable()
@@ -27,7 +26,7 @@ export class PermissionTokenGuard extends AuthGuard('jwt') {
     return true;
   }
 
-  handleRequest(err: any, user: any, info: any, context: any) {
+  handleRequest(err: any, user: any, _info: any, _context: any) {
     if (err) {
       return null;
     }

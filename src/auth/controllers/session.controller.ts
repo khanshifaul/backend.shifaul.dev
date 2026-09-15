@@ -148,7 +148,7 @@ export class SessionController extends BaseController {
   async invalidateSession(
     @User('id') userId: string,
     @Param('sessionId') sessionId: string,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponseType> {
     try {
       await this.sessionService.invalidateSession(userId, sessionId);
@@ -233,7 +233,7 @@ export class SessionController extends BaseController {
   async revokeSuspiciousSessions(
     @User('id') userId: string,
     @User() user: any,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponseType> {
     try {
       const result = await this.sessionService.revokeSuspiciousSessions(
@@ -288,7 +288,7 @@ export class SessionController extends BaseController {
     @User('id') userId: string,
     @User() user: any,
     @Query('locations') locationsQuery: string,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponseType> {
     try {
       if (!locationsQuery) {

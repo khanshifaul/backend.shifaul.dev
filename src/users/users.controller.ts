@@ -142,11 +142,11 @@ export class UsersController {
 
     // Remove sensitive fields
     const {
-      password,
-      verificationToken,
-      twoFactorSecret,
-      resetToken,
-      resetTokenExpires,
+      password: _password,
+      verificationToken: _verificationToken,
+      twoFactorSecret: _twoFactorSecret,
+      resetToken: _resetToken,
+      resetTokenExpires: _resetTokenExpires,
       ...profile
     } = userData;
 

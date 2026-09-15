@@ -13,19 +13,6 @@ import { AdminUpdateUserDto } from '../dto/admin-update-user.dto';
 import { AdminUserQueryDto } from '../dto/admin-user-query.dto';
 import { AdminUserResponseDto } from '../dto/admin-user-response.dto';
 
-interface AdminAuditLog {
-  adminId: string;
-  adminEmail: string;
-  targetId: string;
-  targetEmail: string;
-  action: string;
-  reason?: string;
-  changes?: Record<string, any>;
-  ipAddress?: string;
-  userAgent?: string;
-  timestamp: Date;
-}
-
 @Injectable()
 export class AdminUserService {
   private readonly logger = new Logger(AdminUserService.name);

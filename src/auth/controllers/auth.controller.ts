@@ -246,7 +246,7 @@ export class AuthController extends BaseController {
           // We need to get user ID for logging, but we don't have it if validation failed
           // So we'll log with minimal info
           this.logger.warn(`❌ Login failed for email: ${loginDto.email}, IP: ${req.ip}`);
-        } catch (logError) {
+        } catch (_logError) {
           // Don't let logging errors break the response
         }
         throw error; // Keep authentication errors as HttpExceptions
@@ -298,7 +298,7 @@ export class AuthController extends BaseController {
       }
 
       // Use the new enhanced token verification method
-      const { email, user, tokenValid } =
+      const { email: _email, user, tokenValid } =
         await this.usersService.verifyEmailToken(token);
 
       if (!tokenValid) {
@@ -688,7 +688,7 @@ export class AuthController extends BaseController {
   async changePassword(
     @User('id') userId: string,
     @Body() changePasswordDto: ChangePasswordDto,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponse> {
     try {
       await this.authCoreService.changePassword(

@@ -261,6 +261,29 @@ model ContactMessage {
   @@map("contact_messages")
 }
 
+/// Contact requests triggered by the AI assistant chat (visitor asks to be
+/// contacted or to pass a message to Shifaul). Distinct from ContactMessage
+/// (which is for the form at /contact).
+model ContactRequest {
+  id           String   @id @default(cuid())
+  sessionKey   String?  @db.VarChar(255)
+  visitorEmail String?  @db.VarChar(255)
+  visitorName  String?  @db.VarChar(255)
+  intent       String   // e.g. "talk", "interview", "project", "callback"
+  message      String   @db.Text
+  context      Json?    // last 3-5 chat turns at the time of request
+  channel      String   @default("telegram") // telegram | email | etc.
+  status       String   @default("pending") // pending | sent | failed
+  sentAt       DateTime?
+  sendError    String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([sessionKey])
+  @@index([createdAt])
+  @@map("contact_requests")
+}
+
 model NewsletterSubscriber {
   id           String   @id @default(cuid())
   email        String   @unique @db.VarChar(255)
@@ -340,4 +363,56 @@ model VisitorEvent {
   @@index([event])
   @@index([createdAt])
   @@map("visitor_events")
+}
+
+/// ============================================================
+/// AI ASSISTANT - RAG Knowledge Base
+/// ============================================================
+
+model KnowledgeChunk {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  source    String
+  sourceUrl String?
+  metadata  Json?
+  embedding Float[]  @default([])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([source])
+  @@index([createdAt])
+  @@map("knowledge_chunks")
+}
+
+model ChatSession {
+  id         String        @id @default(cuid())
+  sessionKey String        @unique @db.VarChar(255)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  messages   ChatMessage[]
+
+  @@index([sessionKey])
+  @@map("chat_sessions")
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      ChatRole
+  content   String   @db.Text
+  sources   Json?
+  tokens    Int?
+  createdAt DateTime @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+  SYSTEM
 }

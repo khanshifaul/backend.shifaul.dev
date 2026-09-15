@@ -46,7 +46,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'refresh-to
         this.logger.log('Refresh token strategy configured successfully via ConfigService.');
     }
 
-    async validate(req: any, payload: RefreshTokenPayload) {
+    async validate(_req: any, payload: RefreshTokenPayload) {
         const roles = Array.isArray(payload.roles) ? payload.roles : ['user'];
 
         this.logger.log(`🔍 Validating refresh token for user: ${payload.sub}, session: ${payload.sessionId}`);

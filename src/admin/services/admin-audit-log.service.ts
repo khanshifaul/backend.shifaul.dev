@@ -16,7 +16,7 @@ export class AdminAuditLogService {
   // - Export functionality
   // - Retention policy management
 
-  async getAuditLogs(query: any): Promise<any> {
+  async getAuditLogs(_query: any): Promise<any> {
     // TODO: Implement audit log retrieval
     return {
       logs: [],
@@ -31,7 +31,7 @@ export class AdminAuditLogService {
     };
   }
 
-  async getSecurityEvents(query: any): Promise<any> {
+  async getSecurityEvents(_query: any): Promise<any> {
     // TODO: Implement security events retrieval
     return {
       events: [],
@@ -40,7 +40,7 @@ export class AdminAuditLogService {
     };
   }
 
-  async getUserActivityLogs(userId: string, query: any): Promise<any> {
+  async getUserActivityLogs(userId: string, _query: any): Promise<any> {
     // TODO: Implement user activity logs
     return {
       userId,

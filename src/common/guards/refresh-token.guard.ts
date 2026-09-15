@@ -37,7 +37,7 @@ export class RefreshTokenGuard extends AuthGuard(['refresh-token']) {
         return super.canActivate(context);
     }
 
-    handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
+    handleRequest(err: any, user: any, info: any, _context: ExecutionContext) {
         console.log('🔍 ========== REFRESH TOKEN GUARD HANDLE REQUEST ==========');
         console.log('🔍 Error:', err);
         console.log('🔍 User:', user);

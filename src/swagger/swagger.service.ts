@@ -52,9 +52,6 @@ export class SwaggerService implements OnModuleInit {
     const googleClientId = this.configService.get('GOOGLE_CLIENT_ID');
     const githubClientId = this.configService.get('GITHUB_CLIENT_ID');
 
-    // Create the exact tag order array for the custom sorter
-    const tagOrder = SWAGGER_CONFIG.tags.map((tag) => tag.name);
-
     SwaggerModule.setup('api/docs', this.app, document, {
       swaggerOptions: {
         persistAuthorization: true,

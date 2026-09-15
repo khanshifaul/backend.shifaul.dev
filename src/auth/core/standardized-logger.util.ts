@@ -395,7 +395,7 @@ export class StandardizedLogger {
     
     // Remove additional info that might contain sensitive data
     if (sanitized.additionalInfo) {
-      const { password, token, secret, ...safeInfo } = sanitized.additionalInfo;
+      const { password: _password, token: _token, secret: _secret, ...safeInfo } = sanitized.additionalInfo;
       sanitized.additionalInfo = safeInfo;
     }
     

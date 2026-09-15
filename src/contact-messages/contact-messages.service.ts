@@ -1,6 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DatabaseService } from '../database/database.service';
 import { LoggerService } from '../utils/logger/logger.service';
+import { TelegramService } from '../notifier/telegram.service';
 import { CreateContactMessageDto } from './dto/create-contact-message.dto';
 import { ContactMessageQueryDto } from './dto/contact-message-query.dto';
 
@@ -9,6 +10,7 @@ export class ContactMessagesService {
   constructor(
     private readonly prisma: DatabaseService,
     private readonly logger: LoggerService,
+    private readonly telegram: TelegramService,
   ) {}
 
   async createContactMessage(dto: CreateContactMessageDto) {
@@ -25,6 +27,25 @@ export class ContactMessagesService {
       this.logger.info(
         `Contact message created: ${contactMessage.id} from ${contactMessage.email}`,
       );
+
+      // Notify Shifaul via Telegram — fire-and-forget so the form response is fast.
+      this.telegram
+        .sendContactForm({
+          name: dto.name,
+          email: dto.email,
+          subject: dto.subject,
+          message: dto.message,
+        })
+        .then((sent) => {
+          this.logger.info(
+            `Contact form ${contactMessage.id} telegram notification ${sent ? 'sent' : 'skipped/failed'}`,
+          );
+        })
+        .catch((err) => {
+          this.logger.error(
+            `Contact form telegram notification crashed: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        });
 
       return {
         id: contactMessage.id,

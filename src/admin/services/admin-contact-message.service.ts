@@ -12,8 +12,8 @@ export class AdminContactMessageService {
   async getAllContactMessages(query: any) {
     try {
       const {
-        status,
-        priority,
+        status: _status,
+        priority: _priority,
         search,
         sortBy,
         sortOrder,

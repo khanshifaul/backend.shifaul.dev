@@ -77,10 +77,6 @@ export class TokenService {
         throw new Error('JWT secrets missing');
       }
 
-      // Generate session expiry and refresh token expiry
-      const sessionExpiryHours = rememberMe ? 30 * 24 : 24; // 30 days or 24 hours
-      const refreshTokenExpiryHours = rememberMe ? 30 * 24 : 7 * 24; // 30 days or 7 days
-
       // Create user session with enhanced security
       const session = await this.createUserSession(
         userId,
@@ -627,7 +623,7 @@ export class TokenService {
 
       const now = Math.floor(Date.now() / 1000);
       return (decoded.exp || 0) < now;
-    } catch (error) {
+    } catch (_error) {
       return true;
     }
   }

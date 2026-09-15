@@ -2,10 +2,16 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { Reflector } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import {
+  ThrottlerGuard,
+  ThrottlerModule,
+  getOptionsToken,
+  getStorageToken,
+} from '@nestjs/throttler';
 import { join } from 'path';
 import { AdminModule } from './admin/admin.module';
 import { AppController } from './app.controller';
@@ -20,6 +26,7 @@ import { UrlConfigService } from './config/url.config';
 import { validationSchema } from './config/validation.schema';
 import { DatabaseModule } from './database/database.module';
 import { MailModule } from './mail/mail.module';
+import { NotifierModule } from './notifier/notifier.module';
 import { SupportTicketsModule } from './support-tickets/support-tickets.module';
 import { UsersModule } from './users/users.module';
 import { BlogPostsModule } from './blog-posts/blog-posts.module';
@@ -30,6 +37,7 @@ import { StorageModule } from './storage/storage.module';
 import { LoggerService } from './utils/logger/logger.service';
 import { KeepAliveModule } from './keep-alive/keep-alive.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { AiAssistantModule } from './ai-assistant/ai-assistant.module';
 
 @Module({
   imports: [
@@ -75,7 +83,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
       serveRoot: '/files',
       serveStaticOptions: {
         index: false, // Don't serve index.html
-        setHeaders: (res, path) => {
+        setHeaders: (res, _path) => {
           // Set cache headers for static files
           res.setHeader('Cache-Control', 'public, max-age=3600');
         },
@@ -87,6 +95,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     AuthModule,
     UsersModule,
     MailModule,
+    NotifierModule,
     AdminModule,
     SupportTicketsModule,
     BlogPostsModule,
@@ -96,11 +105,13 @@ import { AnalyticsModule } from './analytics/analytics.module';
     StorageModule,
     KeepAliveModule,
     AnalyticsModule,
+    AiAssistantModule,
   ],
   controllers: [AppController],
   providers: [
     AppService,
     LoggerService,
+    Reflector,
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
@@ -115,7 +126,12 @@ import { AnalyticsModule } from './analytics/analytics.module';
     },
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useFactory: (
+        options: ConstructorParameters<typeof ThrottlerGuard>[0],
+        storage: ConstructorParameters<typeof ThrottlerGuard>[1],
+        reflector: Reflector,
+      ) => new ThrottlerGuard(options, storage, reflector),
+      inject: [getOptionsToken(), getStorageToken(), Reflector],
     },
     ImpersonationGuard,
     CsrfMiddleware,

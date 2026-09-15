@@ -17,7 +17,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
   private safeStringify(obj: any): string {
     const seen = new WeakSet();
-    return JSON.stringify(obj, (key, value) => {
+    return JSON.stringify(obj, (_key, value) => {
       if (typeof value === 'object' && value !== null) {
         if (seen.has(value)) {
           return '[Circular Reference]';

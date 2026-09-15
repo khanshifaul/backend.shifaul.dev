@@ -186,7 +186,7 @@ export type TicketReopenRequestGroupByOutputType = {
   _max: TicketReopenRequestMaxAggregateOutputType | null
 }
 
-type GetTicketReopenRequestGroupByPayload<T extends TicketReopenRequestGroupByArgs> = Prisma.PrismaPromise<
+export type GetTicketReopenRequestGroupByPayload<T extends TicketReopenRequestGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<TicketReopenRequestGroupByOutputType, T['by']> &
       {
@@ -1554,6 +1554,11 @@ export type TicketReopenRequestFindManyArgs<ExtArgs extends runtime.Types.Extens
    * Skip the first `n` TicketReopenRequests.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of TicketReopenRequests.
+   */
   distinct?: Prisma.TicketReopenRequestScalarFieldEnum | Prisma.TicketReopenRequestScalarFieldEnum[]
 }
 

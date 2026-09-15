@@ -515,8 +515,8 @@ export class ProjectsService {
   async updateProject(
     projectId: string,
     dto: UpdateProjectDto,
-    userId?: string,
-    userRoles?: string[],
+    _userId?: string,
+    _userRoles?: string[],
   ) {
     try {
       const existingProject = await this.prisma.project.findUnique({
@@ -589,7 +589,7 @@ export class ProjectsService {
     }
   }
 
-  async deleteProject(projectId: string, userId?: string, userRoles?: string[]) {
+  async deleteProject(projectId: string, _userId?: string, userRoles?: string[]) {
     try {
       const existingProject = await this.prisma.project.findUnique({
         where: { id: projectId },

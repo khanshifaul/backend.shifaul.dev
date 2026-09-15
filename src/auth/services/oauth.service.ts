@@ -157,10 +157,6 @@ export class OAuthService {
       throw new BadRequestException(
         `Token refresh not implemented for ${provider}`,
       );
-
-      this.logger.log(
-        `Successfully refreshed ${provider} token for user ${userId}`,
-      );
     } catch (error) {
       this.logger.error(
         `Failed to refresh ${provider} token for user ${userId}:`,

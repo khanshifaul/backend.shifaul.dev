@@ -35,7 +35,7 @@ export class KeepAliveService {
         ),
       );
       this.logger.log('Self-ping successful - instance kept alive.');
-    } catch (error) {
+    } catch (_error) {
       // Error is caught and logged, preventing application crash
     }
   }

@@ -224,7 +224,6 @@ export class AdminUserGrowthService {
     endDate: Date;
   } {
     const now = new Date();
-    const timezone = query.timezone || 'UTC';
 
     switch (query.timeRange) {
       case UserGrowthTimeRange.YESTERDAY:

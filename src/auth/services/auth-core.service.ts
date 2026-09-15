@@ -14,7 +14,6 @@ import { LoggerService } from 'src/utils/logger/logger.service';
 import { DatabaseService } from '../../database/database.service';
 import { MailService } from '../../mail/mail.service';
 import { UsersService } from '../../users/users.service';
-import { mapStringToProviderEnum } from '../shared/types/provider.types';
 import { IpGeolocationService } from '../core/ip-geolocation.service';
 import { TokenService } from './token.service';
 
@@ -248,7 +247,7 @@ export class AuthCoreService {
       ipAddress,
       userAgent,
     );
-    const { password, verificationToken, twoFactorSecret, ...userResult } =
+    const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
       user;
 
     // Get primary provider
@@ -387,7 +386,7 @@ export class AuthCoreService {
       false, // rememberMe default to false for OAuth
     );
 
-    const { password, verificationToken, twoFactorSecret, ...userResult } =
+    const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
       validatedUser;
 
     // Get primary provider
@@ -434,7 +433,7 @@ export class AuthCoreService {
       false, // rememberMe default to false for OAuth
     );
 
-    const { password, verificationToken, twoFactorSecret, ...userResult } =
+    const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
       validatedUser;
 
     // Get primary provider
@@ -482,7 +481,7 @@ export class AuthCoreService {
       false, // rememberMe default to false for OAuth
     );
 
-    const { password, verificationToken, twoFactorSecret, ...userResult } =
+    const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
       validatedUser;
 
     // Get primary provider
@@ -786,7 +785,7 @@ export class AuthCoreService {
         userAgent,
       );
 
-      const { password, verificationToken, twoFactorSecret, ...userResult } =
+      const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
         user;
 
       // Get primary provider
@@ -843,7 +842,7 @@ export class AuthCoreService {
         payload = await this.jwtService.verifyAsync(tempToken, {
           secret: this.configService.get('JWT_SECRET'),
         });
-      } catch (err) {
+      } catch (_err) {
         this.logger.warn(
           'Invalid or expired temporary token for backup code login',
         );
@@ -918,7 +917,7 @@ export class AuthCoreService {
         userAgent,
       );
 
-      const { password, verificationToken, twoFactorSecret, ...userResult } =
+      const { password: _password, verificationToken: _verificationToken, twoFactorSecret: _twoFactorSecret, ...userResult } =
         user;
 
       // Get primary provider
@@ -1107,7 +1106,7 @@ export class AuthCoreService {
       this.logger.debug(`TOTP Code: ${finalCode} (time: ${counter})`);
 
       return finalCode;
-    } catch (error) {
+    } catch (_error) {
       const { totp } = require('otplib');
       return totp.generate(secret);
     }

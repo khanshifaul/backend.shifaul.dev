@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'backend.shifaul.dev',
-      script: 'pnpm',
-      args: 'start',
+      script: 'bun',
+      args: 'run start:prod',
       autorestart: true,
       watch: false,
       max_memory_restart: '1G',

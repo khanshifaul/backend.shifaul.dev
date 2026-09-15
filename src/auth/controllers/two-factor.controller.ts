@@ -174,7 +174,7 @@ export class TwoFactorController extends BaseController {
   async enableTwoFactor(
     @User('id') userId: string,
     @Body() dto: EnableTwoFactorDto,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponse> {
     try {
       const result = await this.twoFactorService.enableTwoFactor(
@@ -228,7 +228,7 @@ export class TwoFactorController extends BaseController {
   async disableTwoFactor(
     @User('id') userId: string,
     @Body() dto: EnableTwoFactorDto,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponse> {
     try {
       const result = await this.twoFactorService.disableTwoFactor(
@@ -315,7 +315,7 @@ export class TwoFactorController extends BaseController {
   async generateBackupCodes(
     @User('id') userId: string,
     @Body() dto: GenerateBackupCodesDto,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponse> {
     try {
       const result = await this.twoFactorService.generateBackupCodes(
@@ -375,7 +375,7 @@ export class TwoFactorController extends BaseController {
   async regenerateBackupCodes(
     @User('id') userId: string,
     @Body() dto: RegenerateBackupCodesDto,
-    @Req() req: Request,
+    @Req() _req: Request,
   ): Promise<ApiResponse> {
     try {
       const result = await this.twoFactorService.regenerateBackupCodes(

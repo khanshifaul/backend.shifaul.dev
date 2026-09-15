@@ -1,6 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsOptional, IsString, Min, Max } from 'class-validator';
 
 /**
  * DTO for querying blog posts with pagination, filtering, and search capabilities.

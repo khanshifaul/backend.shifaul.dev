@@ -159,7 +159,7 @@ export class PermissionException extends ForbiddenException {
  * Decorator for requiring specific roles
  */
 export function RequireRoles(...roles: string[]) {
-  return (target: any, propertyName: string, descriptor: PropertyDescriptor) => {
+  return (_target: any, _propertyName: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     
     descriptor.value = function (...args: any[]) {

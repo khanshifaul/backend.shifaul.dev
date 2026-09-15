@@ -31,7 +31,7 @@ export class TwoFactorUtils {
       this.logger.debug(`TOTP Code: ${finalCode} (time: ${counter})`);
 
       return finalCode;
-    } catch (error) {
+    } catch (_error) {
       const { totp } = require('otplib');
       return totp.generate(secret);
     }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as winston from 'winston';
-import 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 @Injectable()
 export class LoggerService {
@@ -19,7 +19,7 @@ export class LoggerService {
 
     // File transport with rotation for all logs
     transports.push(
-      new winston.transports.DailyRotateFile({
+      new DailyRotateFile({
         filename: `${logDir}/app-%DATE%.log`,
         datePattern: 'YYYY-MM-DD',
         maxSize: '20m',
@@ -34,7 +34,7 @@ export class LoggerService {
 
     // File transport for error logs only
     transports.push(
-      new winston.transports.DailyRotateFile({
+      new DailyRotateFile({
         filename: `${logDir}/error-%DATE%.log`,
         datePattern: 'YYYY-MM-DD',
         level: 'error',
@@ -50,7 +50,7 @@ export class LoggerService {
 
     // Security events log
     transports.push(
-      new winston.transports.DailyRotateFile({
+      new DailyRotateFile({
         filename: `${logDir}/security-%DATE%.log`,
         datePattern: 'YYYY-MM-DD',
         level: 'info',

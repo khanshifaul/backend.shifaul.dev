@@ -52,7 +52,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     try {
       // Log profile to check if it's undefined
       this.logger.log(
-        `Google OAuth profile received: ${!!profile ? 'defined' : 'undefined'}`,
+        `Google OAuth profile received: ${profile ? 'defined' : 'undefined'}`,
       );
       if (!profile) {
         this.logger.error(

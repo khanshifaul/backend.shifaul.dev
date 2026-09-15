@@ -73,7 +73,6 @@ export class TwoFactorService {
       this.logger.log(`Generating 2FA secret for user: ${user.email}`);
 
       const secret = authenticator.generateSecret();
-      const serviceName = this.appName.replace(/\s+/g, '');
       const issuer = this.appName;
       const accountName = `${user.email.split('@')[0]}@${user.email.split('@')[1]}`;
 
@@ -484,7 +483,7 @@ export class TwoFactorService {
       this.logger.debug(`TOTP Code: ${finalCode} (time: ${timeCounter})`);
 
       return finalCode;
-    } catch (error) {
+    } catch (_error) {
       return totp.generate(secret);
     }
   }

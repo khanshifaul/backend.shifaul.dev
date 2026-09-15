@@ -58,6 +58,13 @@ export type TicketReopenRequest = Prisma.TicketReopenRequestModel
  */
 export type ContactMessage = Prisma.ContactMessageModel
 /**
+ * Model ContactRequest
+ * Contact requests triggered by the AI assistant chat (visitor asks to be
+ * contacted or to pass a message to Shifaul). Distinct from ContactMessage
+ * (which is for the form at /contact).
+ */
+export type ContactRequest = Prisma.ContactRequestModel
+/**
  * Model NewsletterSubscriber
  * 
  */
@@ -82,3 +89,18 @@ export type Project = Prisma.ProjectModel
  * 
  */
 export type VisitorEvent = Prisma.VisitorEventModel
+/**
+ * Model KnowledgeChunk
+ * 
+ */
+export type KnowledgeChunk = Prisma.KnowledgeChunkModel
+/**
+ * Model ChatSession
+ * 
+ */
+export type ChatSession = Prisma.ChatSessionModel
+/**
+ * Model ChatMessage
+ * 
+ */
+export type ChatMessage = Prisma.ChatMessageModel
